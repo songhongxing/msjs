@@ -1,9 +1,14 @@
 package com.yuxi.msjs.service;
 
+import cn.hutool.core.util.RandomUtil;
+import com.yuxi.msjs.bean.Shoujun;
 import com.yuxi.msjs.bean.entity.SlgMap;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 /**
  * .
@@ -17,10 +22,38 @@ public class MapService {
     @Autowired
     private MongoTemplate mongoTemplate;
 
-    public void insert(){
-        SlgMap slgMap = new SlgMap();
-        slgMap.setId(2);
-        slgMap.setDklx("ssss");
-        mongoTemplate.save(slgMap);
+    private String[] dklb = {"村庄","农田", "林场","村庄", "石矿", "铁矿"};
+
+    public void insert() {
+
+        for (int i = 0; i < 1000; i++) {
+            SlgMap slgMap = new SlgMap();
+            slgMap.setId(i);
+            slgMap.setDklx(dklb[RandomUtil.randomInt(0, dklb.length)]);
+            if ("村庄".equals(slgMap.getDklx())) {
+                slgMap.setDkmc("村庄");
+                slgMap.setDkdj(0);
+                slgMap.setDksj(0);
+            } else {
+                slgMap.setDkmc(slgMap.getDklx());
+                slgMap.setDkdj(RandomUtil.randomInt(1, 5));
+                slgMap.setDksj(Shoujun.getKeyByValue(slgMap.getDkdj()));
+            }
+            slgMap.setMzbz(0);
+            slgMap.setMzdq(null);
+            mongoTemplate.save(slgMap);
+        }
+    }
+
+    public List<SlgMap> ditu(Integer ym){
+        Query query = new Query();
+        query.limit(100);
+        query.skip(100 * (ym - 1));
+        return mongoTemplate.find(query, SlgMap.class);
+    }
+
+    public static void main(String[] args) {
+        System.out.println(Shoujun.getKeyByValue(2));
+
     }
 }
