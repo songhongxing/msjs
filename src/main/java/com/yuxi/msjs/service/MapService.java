@@ -5,6 +5,7 @@ import com.yuxi.msjs.bean.Shoujun;
 import com.yuxi.msjs.bean.entity.SlgMap;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 
@@ -43,6 +44,20 @@ public class MapService {
             slgMap.setMzdq(null);
             mongoTemplate.save(slgMap);
         }
+    }
+
+    /**
+     * 返回一个村庄的坐标
+     * @return
+     */
+    public Integer zuobiao(){
+        int index = RandomUtil.randomInt(100, 900);
+        Query query = new Query();
+        query.skip(index);
+        query.limit(1);
+        query.addCriteria(Criteria.where("dklx").is("村庄"));
+        SlgMap slgMap = mongoTemplate.findOne(query, SlgMap.class);
+        return slgMap.getId();
     }
 
     public List<SlgMap> ditu(Integer ym){
