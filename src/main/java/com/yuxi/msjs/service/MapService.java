@@ -41,7 +41,6 @@ public class MapService {
                 slgMap.setDksj(Shoujun.getKeyByValue(slgMap.getDkdj()));
             }
             slgMap.setMzbz(0);
-            slgMap.setMzdq(null);
             mongoTemplate.save(slgMap);
         }
     }
@@ -51,12 +50,15 @@ public class MapService {
      * @return
      */
     public Integer zuobiao(){
-        int index = RandomUtil.randomInt(100, 900);
-        Query query = new Query();
-        query.skip(index);
-        query.limit(1);
-        query.addCriteria(Criteria.where("dklx").is("村庄"));
-        SlgMap slgMap = mongoTemplate.findOne(query, SlgMap.class);
+        SlgMap slgMap = null;
+        while (slgMap == null){
+            int index = RandomUtil.randomInt(100, 900);
+            Query query = new Query();
+            query.skip(index);
+            query.limit(1);
+            query.addCriteria(Criteria.where("dklx").is("村庄"));
+            slgMap = mongoTemplate.findOne(query, SlgMap.class);
+        }
         return slgMap.getId();
     }
 

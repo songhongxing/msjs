@@ -8,10 +8,10 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
 @Data
-@Document
+@Document("user_city")
 public class UserCity {
 
-    @Id
+    @Field
     @Indexed
     private String cityId;//城市id
     @Field

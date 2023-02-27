@@ -58,4 +58,8 @@ public class UserService {
     }
 
 
+    public User findById(String userId) {
+        Query query = new Query(Criteria.where("userId").is(userId));
+        return mongoTemplate.findOne(query, User.class);
+    }
 }

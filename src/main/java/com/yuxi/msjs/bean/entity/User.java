@@ -8,10 +8,10 @@ import org.springframework.data.mongodb.core.mapping.Field;
 import org.springframework.data.mongodb.core.mapping.MongoId;
 
 @Data
-@Document
+@Document("user")
 public class User {
 
-    @Id
+    @Field
     @Indexed
     private String userId;//用户id
     @Field
@@ -23,15 +23,19 @@ public class User {
     @Field
     private Integer tq = 0;//铜钱
     @Field
-    private String lmId;//联盟id
+    private String lmId = "0";//联盟id
     @Field
     private String dlsj;//登录时间
+
+    private Long sjhms;//时间毫秒数
     @Field
     private Integer ggcs = 0;//广告经验
     @Field
     private Integer flsl = 0;//俘虏数量
     @Field
     private Double zyjc = 0D;//资源加成
+    @Field
+    private Integer mgg = 0;//是否免广告
 
 
 }

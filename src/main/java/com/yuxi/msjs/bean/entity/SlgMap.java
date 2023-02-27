@@ -1,11 +1,8 @@
 package com.yuxi.msjs.bean.entity;
 
 import lombok.Data;
-import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
-
-import java.util.Date;
 
 /**
  * @author songhongxing
@@ -15,7 +12,7 @@ import java.util.Date;
 @Document("slg_map")
 public class SlgMap {
 
-    @Id
+    @Field
     private Integer id;
 
     /**
@@ -44,8 +41,18 @@ public class SlgMap {
     @Field
     private Integer mzbz;
     /**
-     * 免战到期时间
+     * 所属玩家id
      */
     @Field
-    private Date mzdq;
+    private String sswjId = "";
+    /**
+     * 所属玩家姓名
+     */
+    @Field
+    private String sswjName = "";
+    /**
+     * 免战到期
+     */
+    @Field
+    private Long mzdq = 0L;
 }
