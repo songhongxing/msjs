@@ -36,6 +36,11 @@ public class User {
     private Double zyjc = 0D;//资源加成
     @Field
     private Integer mgg = 0;//是否免广告
+    @Field
+    private String junxian = "五等校尉";
+    @Field
+    private Integer jungong = 0;//军工
+
 
 
 }
