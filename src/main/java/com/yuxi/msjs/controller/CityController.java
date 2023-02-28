@@ -29,4 +29,16 @@ public class CityController extends BaseController{
         UserCity userCity = cityService.userCity(cityId);
         return arrayUtil.toDict(BeanUtil.beanToMap(userCity));
     }
+
+    @GetMapping("/jz/sj")
+    public String jianzhusj(String cityId, String jzName, Integer jzdj, Integer sjsj){
+        cityService.jzshengji(cityId, jzName, jzdj, sjsj);
+        return "添加成功";
+    }
+
+    @GetMapping("/jz/sjwc")
+    public String jianzhusj(String cityId, String jzName){
+        cityService.sjwc(cityId, jzName);
+        return "升级完成";
+    }
 }

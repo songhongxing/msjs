@@ -28,7 +28,7 @@ public class ZiyuanTask {
     @Autowired
     private MongoTemplate mongoTemplate;
 
-    @Scheduled(cron = "0/10 * * * * ?")
+    @Scheduled(cron = "0 0/2 * * * ?")
     public void task() {
         List<UserCity> userCities = mongoTemplate.findAll(UserCity.class);
         if (CollUtil.isEmpty(userCities)) {
@@ -42,16 +42,16 @@ public class ZiyuanTask {
             query = new Query();
             query.addCriteria(Criteria.where("cityId").is(userCity.getCityId()));
             if (userCity.getMucc() < userCity.getCkcc()) {
-                userCity.setMucc(userCity.getMucl() * 2 + userCity.getMucc());
+                userCity.setMucc(Integer.valueOf(userCity.getMucl() / 30) + userCity.getMucc());
             }
             if (userCity.getShicc() < userCity.getCkcc()) {
-                userCity.setShicc(userCity.getShicl() * 2 + userCity.getShicc());
+                userCity.setShicc(Integer.valueOf(userCity.getShicl() / 30) + userCity.getShicc());
             }
             if (userCity.getTiecc() < userCity.getCkcc()) {
-                userCity.setTiecc(userCity.getTiecl() * 2 + userCity.getTiecc());
+                userCity.setTiecc(Integer.valueOf(userCity.getTiecl() / 30) + userCity.getTiecc());
             }
             if (userCity.getLiangcc() < userCity.getLccc()) {
-                userCity.setLiangcc(userCity.getLiangcl() * 2 + userCity.getLiangcc());
+                userCity.setLiangcc(Integer.valueOf(userCity.getLiangcl() / 30) + userCity.getLiangcc());
             }
             update = new Update();
             update.set("mucc", userCity.getMucc());

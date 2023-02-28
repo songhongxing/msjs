@@ -1,8 +1,6 @@
 package com.yuxi.msjs.bean.entity;
 
-import lombok.Builder;
 import lombok.Data;
-import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
@@ -23,19 +21,19 @@ public class UserCity {
     @Field
     private Integer mucc = 5000;//木存储
     @Field
-    private Integer mucl = 0;//木产量
+    private Integer mucl = 100;//木产量
     @Field
     private Integer shicc = 5000;//石存储
     @Field
-    private Integer shicl = 0;//石产量
+    private Integer shicl = 100;//石产量
     @Field
     private Integer tiecc = 5000;//铁存储
     @Field
-    private Integer tiecl = 0;//铁产量
+    private Integer tiecl = 100;//铁产量
     @Field
     private Integer liangcc = 5000;//粮存储
     @Field
-    private Integer liangcl = 0;//粮产量
+    private Integer liangcl = 100;//粮产量
     @Field
     private Integer nzt = 0;//内政厅
     @Field
@@ -78,4 +76,15 @@ public class UserCity {
     private Integer gg = 0;//工兵
     @Field
     private Integer zhl = 0;//总耗粮
+    @Field
+    private Integer zbl = 0;//总兵力
+    @Field
+    private Integer linchang = 0;//林场
+    @Field
+    private Integer shikuang = 0;//石矿等级
+    @Field
+    private Integer tiekuang = 0;//铁矿
+    @Field
+    private Integer nongtian = 0;//农田
+
 }
