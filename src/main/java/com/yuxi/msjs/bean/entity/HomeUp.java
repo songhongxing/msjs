@@ -21,6 +21,6 @@ public class HomeUp {
     @Field
     private Integer jzdj;//建筑等级
     @Field
-    private Long dqsj;//完成时间
+    private Integer dqsj;//完成时间
 
 }

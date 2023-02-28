@@ -71,7 +71,9 @@ public class ArrayUtil<T> {
                 }
             }
             //填充空集合
-            data.append(listSb.substring(0, listSb.length() - 1));
+            if(listSb.length() > 0){
+                data.append(listSb.substring(0, listSb.length() - 1));
+            }
             data.append("]");
         } catch (Exception e) {
             e.printStackTrace();

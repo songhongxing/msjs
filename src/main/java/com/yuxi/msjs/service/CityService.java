@@ -1,5 +1,7 @@
 package com.yuxi.msjs.service;
 
+import cn.hutool.core.date.DateUnit;
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.lang.UUID;
 import com.yuxi.msjs.bean.Jianzhu;
 import com.yuxi.msjs.bean.entity.HomeUp;
@@ -11,6 +13,7 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.List;
 
 @Service
@@ -70,13 +73,16 @@ public class CityService {
      * @author songhongxing
      * @date 2023/02/28 4:55 下午
      */
-    public void jzshengji(String cityId, String jzName, Integer jzdj, Integer sjsj) {
+    public List<HomeUp> jzshengji(String cityId, String jzName, Integer jzdj, Integer sjsj) {
         HomeUp homeUp = new HomeUp();
         homeUp.setCityId(cityId);
         homeUp.setJzName(jzName);
         homeUp.setJzdj(jzdj+1);
-        homeUp.setDqsj(System.currentTimeMillis()/1000 + sjsj);
+        long dqsj = System.currentTimeMillis() / 1000 + sjsj;
+        homeUp.setDqsj((int) dqsj);
         mongoTemplate.save(homeUp);
+        Query query = new Query(Criteria.where("cityId").is(cityId));
+        return mongoTemplate.find(query, HomeUp.class);
     }
 
     /**
@@ -86,7 +92,7 @@ public class CityService {
      * @author songhongxing
      * @date 2023/02/28 5:02 下午
      */
-    public void sjwc(String cityId, String jzName){
+    public List<HomeUp> sjwc(String cityId, String jzName){
         //删除建筑队列
         Query query = new Query();
         query.addCriteria(Criteria.where("cityId").is(cityId).and("jzName").is(jzName));
@@ -98,5 +104,18 @@ public class CityService {
         Update update = new Update();
         update.set(Jianzhu.getKeyByValue(jzName), homeUp.getJzdj());
         mongoTemplate.updateFirst(query, update, UserCity.class);
+        return mongoTemplate.find(query, HomeUp.class);
     }
+
+    /**
+     * 建筑队列
+     * @param cityId
+     * @return
+     */
+    public List<HomeUp> jzdl(String cityId){
+        Query query = new Query();
+        query.addCriteria(Criteria.where("cityId").is(cityId));
+        return mongoTemplate.find(query, HomeUp.class);
+    }
+
 }
