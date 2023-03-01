@@ -15,6 +15,8 @@ public class Lmcy {
 
     private String name;
 
+    private String junxian;//军衔
+
     private String lmgzZw;//联盟官职
 
     private Integer lmgx;//联盟贡献
