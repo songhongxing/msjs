@@ -2,7 +2,9 @@ package com.yuxi.msjs.task;
 
 import cn.hutool.core.collection.CollUtil;
 import com.mongodb.bulk.BulkWriteResult;
+import com.yuxi.msjs.bean.entity.HomeUp;
 import com.yuxi.msjs.bean.entity.UserCity;
+import com.yuxi.msjs.service.CityService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.BulkOperations;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -27,6 +29,8 @@ public class ZiyuanTask {
 
     @Autowired
     private MongoTemplate mongoTemplate;
+    @Autowired
+    private CityService cityService;
 
     @Scheduled(cron = "0 0/2 * * * ?")
     public void task() {
@@ -68,8 +72,22 @@ public class ZiyuanTask {
         BulkWriteResult execute = operations.execute();
     }
 
-//    @Scheduled(cron = "0/1 * * * * ?")
-//    public void ss(){
-//        System.out.println("aaaa");
-//    }
+    /**
+     * 建筑升级
+     * @author songhongxing
+     * @date 2023/03/01 1:22 下午
+     */
+    @Scheduled(cron = "0 0/1 * * * ?")
+    public void jianzhusj(){
+        Query query = new Query(Criteria.where("dasj").lte(System.currentTimeMillis()/1000));
+        List<HomeUp> homeUpList = mongoTemplate.find(query, HomeUp.class);
+        if(CollUtil.isEmpty(homeUpList)){
+            return;
+        }
+
+        for(HomeUp homeUp : homeUpList){
+            cityService.sjwc(homeUp.getCityId(), homeUp.getJzName());
+        }
+
+    }
 }

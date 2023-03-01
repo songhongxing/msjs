@@ -6,6 +6,7 @@ import cn.hutool.core.lang.UUID;
 import com.yuxi.msjs.bean.Jianzhu;
 import com.yuxi.msjs.bean.entity.HomeUp;
 import com.yuxi.msjs.bean.entity.UserCity;
+import com.yuxi.msjs.bean.vo.CityList;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -13,6 +14,7 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -45,10 +47,22 @@ public class CityService {
      * @author songhongxing
      * @date 2023/02/27 10:42 上午
      */
-    public List<UserCity> userCitys(String userId){
+    public List<CityList> userCitys(String userId){
+        List<CityList> cityList = new ArrayList<>();
         Query query = new Query();
         query.addCriteria(Criteria.where("userId").is(userId));
-        return mongoTemplate.find(query, UserCity.class);
+        List<UserCity> userCities = mongoTemplate.find(query, UserCity.class);
+        CityList city;
+        for(UserCity userCity : userCities){
+            city = new CityList();
+            city.setCityId(userCity.getCityId());
+            city.setCityName(userCity.getCityName());
+            city.setZgm(userCity.getZgm());
+            city.setZbl(userCity.getZbl());
+            city.setZuobiao(userCity.getZuobiao());
+            cityList.add(city);
+        }
+        return cityList;
     }
 
     /**
@@ -101,8 +115,10 @@ public class CityService {
         //修改城市的建筑等级
         query = new Query();
         query.addCriteria(Criteria.where("cityId").is(cityId));
+        UserCity userCity = mongoTemplate.findOne(query, UserCity.class);
         Update update = new Update();
         update.set(Jianzhu.getKeyByValue(jzName), homeUp.getJzdj());
+        update.set("zgm", userCity.getZgm() + 10);
         mongoTemplate.updateFirst(query, update, UserCity.class);
         return mongoTemplate.find(query, HomeUp.class);
     }

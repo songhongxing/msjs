@@ -21,19 +21,19 @@ public class UserCity {
     @Field
     private Integer mucc = 5000;//木存储
     @Field
-    private Integer mucl = 100;//木产量
+    private Integer mucl = 1000;//木产量
     @Field
     private Integer shicc = 5000;//石存储
     @Field
-    private Integer shicl = 100;//石产量
+    private Integer shicl = 1000;//石产量
     @Field
     private Integer tiecc = 5000;//铁存储
     @Field
-    private Integer tiecl = 100;//铁产量
+    private Integer tiecl = 1000;//铁产量
     @Field
     private Integer liangcc = 5000;//粮存储
     @Field
-    private Integer liangcl = 100;//粮产量
+    private Integer liangcl = 1000;//粮产量
     @Field
     private Integer nzt = 0;//内政厅
     @Field
@@ -86,5 +86,7 @@ public class UserCity {
     private Integer tiekuang = 0;//铁矿
     @Field
     private Integer nongtian = 0;//农田
+    @Field
+    private Integer zgm = 0;//总规模
 
 }

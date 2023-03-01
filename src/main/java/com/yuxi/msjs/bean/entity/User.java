@@ -25,6 +25,12 @@ public class User {
     @Field
     private String lmId = "0";//联盟id
     @Field
+    private Integer lmgz = 0;//联盟官职 0成员,1副盟主,2盟主
+    @Field
+    private String lmgzZw = "成员";//联盟官职 0成员,1副盟主,2盟主
+    @Field
+    private Integer lmgx = 0;//联盟贡献
+    @Field
     private String dlsj;//登录时间
 
     private Long sjhms;//时间毫秒数
@@ -40,6 +46,7 @@ public class User {
     private String junxian = "五等校尉";
     @Field
     private Integer jungong = 0;//军工
+
 
 
 

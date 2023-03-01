@@ -5,6 +5,7 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.date.DateUtil;
 import com.yuxi.msjs.bean.entity.User;
 import com.yuxi.msjs.bean.entity.UserCity;
+import com.yuxi.msjs.bean.vo.CityList;
 import com.yuxi.msjs.service.CityService;
 import com.yuxi.msjs.service.UserService;
 import com.yuxi.msjs.util.HjArray;
@@ -60,8 +61,8 @@ public class UserController extends BaseController{
      */
     @GetMapping("/citys")
     public HjArray userCitys(String userId){
-        List<UserCity> userCities = cityService.userCitys(userId);
-        return arrayUtil.toArray(userCities, userCities.size(),UserCity.class);
+        List<CityList> cityLists = cityService.userCitys(userId);
+        return arrayUtil.toArray(cityLists, cityLists.size(),CityList.class);
     }
 
 }
