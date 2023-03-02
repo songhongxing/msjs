@@ -3,9 +3,11 @@ package com.yuxi.msjs.service;
 import cn.hutool.core.date.DateUnit;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.lang.UUID;
+import com.yuxi.msjs.bean.Bzzy;
 import com.yuxi.msjs.bean.Jianzhu;
 import com.yuxi.msjs.bean.entity.HomeUp;
 import com.yuxi.msjs.bean.entity.UserCity;
+import com.yuxi.msjs.bean.entity.ZhengBing;
 import com.yuxi.msjs.bean.vo.CityList;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -134,4 +136,47 @@ public class CityService {
         return mongoTemplate.find(query, HomeUp.class);
     }
 
+    /**
+     * 征兵队列
+     * @param cityId
+     * @param bz
+     * @param sl
+     * @param dghs
+     * @author songhongxing
+     * @date 2023/03/02 3:53 下午
+     */
+    public List<ZhengBing> zhengbing(String cityId, String bz, Integer sl, Integer dghs) {
+        ZhengBing zhengBing = new ZhengBing();
+        zhengBing.setCityId(cityId);
+        zhengBing.setBz(bz);
+        zhengBing.setSl(sl);
+        zhengBing.setYzm(0);
+        zhengBing.setDghs(dghs);
+        zhengBing.setZhs(dghs*sl);
+        zhengBing.setKssj((int)DateUtil.currentSeconds());
+        zhengBing.setJssj(zhengBing.getKssj() +zhengBing.getZhs());
+        mongoTemplate.save(zhengBing);
+        Query query = new Query(Criteria.where("cityId").is(cityId));
+        //扣除城市资源
+        UserCity userCity = mongoTemplate.findOne(query, UserCity.class);
+        Update update = new Update();
+        update.set("mucc", userCity.getMucc() - Bzzy.getMuz(bz) * sl);
+        update.set("shicc", userCity.getShicc() - Bzzy.getShiz(bz) * sl);
+        update.set("tiecc", userCity.getTiecc() - Bzzy.getTiez(bz) * sl);
+        update.set("liangcc", userCity.getLiangcc() - Bzzy.getLiangz(bz) * sl);
+        mongoTemplate.updateFirst(query, update, "user_city");
+        return mongoTemplate.find(query, ZhengBing.class);
+
+    }
+
+    /**
+     * 征兵队列
+     * @param cityId
+     * @author songhongxing
+     * @date 2023/03/02 4:03 下午
+     */
+    public List<ZhengBing> zbdl(String cityId) {
+        Query query = new Query(Criteria.where("cityId").is(cityId));
+        return mongoTemplate.find(query, ZhengBing.class);
+    }
 }

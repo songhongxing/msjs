@@ -2,8 +2,10 @@ package com.yuxi.msjs.service;
 
 import com.yuxi.msjs.bean.entity.Lianmeng;
 import com.yuxi.msjs.bean.entity.User;
+import com.yuxi.msjs.bean.vo.LianmengList;
 import com.yuxi.msjs.bean.vo.Lmcy;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -52,6 +54,7 @@ public class LianmengService {
     public List<Lmcy> lmcyList(String lmId){
         List<Lmcy> lmcyList = new ArrayList<>();
         Query query = new Query(Criteria.where("lmId").is(lmId));
+        query.with(Sort.by(Sort.Order.desc("lmgz")));
         List<User> users = mongoTemplate.find(query, User.class);
         Lmcy lmcy;
         for(User user : users){
@@ -64,5 +67,32 @@ public class LianmengService {
             lmcyList.add(lmcy);
         }
         return lmcyList;
+    }
+
+    /**
+     * 联盟列表
+     * @author songhongxing
+     * @date 2023/03/02 10:15 上午
+     */
+    public List<LianmengList> lmlb(){
+//        List<Lianmeng> lianmengList = mongoTemplate.findAll(Lianmeng.class);
+        List<Lianmeng> lianmengList = mongoTemplate.findAll(Lianmeng.class, "lianmeng");
+        LianmengList lianmeng;
+        List<LianmengList> result = new ArrayList<>();
+        Query query;
+        User one;
+        for (Lianmeng bean : lianmengList) {
+            lianmeng = new LianmengList();
+            lianmeng.setLmId(bean.getLmId());
+            query = new Query(Criteria.where("lmId").is(bean.getLmId()).and("lmgz").is(2));
+            one = mongoTemplate.findOne(query, User.class);
+            lianmeng.setLmmc(bean.getLmmc());
+            lianmeng.setMz(one.getName());
+            lianmeng.setLmdj(bean.getLmdj());
+            lianmeng.setLmrs(bean.getLmrs());
+            lianmeng.setLmrl(bean.getLmrl());
+            result.add(lianmeng);
+        }
+        return result;
     }
 }

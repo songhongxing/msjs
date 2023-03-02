@@ -3,6 +3,7 @@ package com.yuxi.msjs.controller;
 import cn.hutool.core.bean.BeanUtil;
 import com.yuxi.msjs.bean.entity.HomeUp;
 import com.yuxi.msjs.bean.entity.UserCity;
+import com.yuxi.msjs.bean.entity.ZhengBing;
 import com.yuxi.msjs.service.CityService;
 import com.yuxi.msjs.util.HjArray;
 import com.yuxi.msjs.util.HjDict;
@@ -49,5 +50,16 @@ public class CityController extends BaseController{
     public HjArray jianzhusj(String cityId){
         List<HomeUp> sjwc = cityService.jzdl(cityId);
         return  arrayUtil.toArray(sjwc, sjwc.size(), HomeUp.class);
+    }
+
+    @GetMapping("/zhengbing")
+    public HjArray zhengbing(String cityId, String bz, Integer sl, Integer dghs){
+        List<ZhengBing> zhengbing = cityService.zhengbing(cityId, bz, sl, dghs);
+        return arrayUtil.toArray(zhengbing, zhengbing.size(), ZhengBing.class);
+    }
+    @GetMapping("/zbdl")
+    public HjArray zhengbingduilie(String cityId){
+        List<ZhengBing> zhengbing = cityService.zbdl(cityId);
+        return arrayUtil.toArray(zhengbing, zhengbing.size(), ZhengBing.class);
     }
 }

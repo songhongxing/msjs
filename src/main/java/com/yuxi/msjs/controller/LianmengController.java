@@ -3,6 +3,7 @@ package com.yuxi.msjs.controller;
 import cn.hutool.core.bean.BeanUtil;
 import com.yuxi.msjs.bean.entity.HomeUp;
 import com.yuxi.msjs.bean.entity.UserCity;
+import com.yuxi.msjs.bean.vo.LianmengList;
 import com.yuxi.msjs.bean.vo.Lmcy;
 import com.yuxi.msjs.service.CityService;
 import com.yuxi.msjs.service.LianmengService;
@@ -44,8 +45,7 @@ public class LianmengController extends BaseController{
     }
 
     /**
-     * 联盟列表
-     * @param userId
+     * 联盟成员列表
      * @param lmId
      * @return
      */
@@ -53,6 +53,17 @@ public class LianmengController extends BaseController{
     public HjArray lb(String lmId){
         List<Lmcy> lmcyList = lianmengService.lmcyList(lmId);
         return arrayUtil.toArray(lmcyList, lmcyList.size(), Lmcy.class);
+    }
+
+    /**
+     * 联盟列表
+     * @author songhongxing
+     * @date 2023/03/02 10:25 上午
+     */
+    @GetMapping("/lb")
+    public HjArray lmlb(){
+        List<LianmengList> lmlb = lianmengService.lmlb();
+        return arrayUtil.toArray(lmlb, lmlb.size(), LianmengList.class);
     }
 
 }

@@ -61,6 +61,8 @@ public class UserCity {
     @Field
     private Integer qb = 0;//枪兵
     @Field
+    private Integer nb = 0;//弩兵
+    @Field
     private Integer qq = 0;//轻骑
     @Field
     private Integer hq = 0;//虎骑兵
@@ -73,7 +75,7 @@ public class UserCity {
     @Field
     private Integer tsc = 0;//投石车
     @Field
-    private Integer gg = 0;//工兵
+    private Integer gb = 0;//工兵
     @Field
     private Integer zhl = 0;//总耗粮
     @Field
