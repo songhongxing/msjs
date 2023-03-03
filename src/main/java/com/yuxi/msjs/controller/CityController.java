@@ -57,7 +57,7 @@ public class CityController extends BaseController{
         List<ZhengBing> zhengbing = cityService.zhengbing(cityId, bz, sl, dghs);
         return arrayUtil.toArray(zhengbing, zhengbing.size(), ZhengBing.class);
     }
-    @GetMapping("/zbdl")
+    @GetMapping("/zblb")
     public HjArray zhengbingduilie(String cityId){
         List<ZhengBing> zhengbing = cityService.zbdl(cityId);
         return arrayUtil.toArray(zhengbing, zhengbing.size(), ZhengBing.class);

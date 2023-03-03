@@ -19,6 +19,8 @@ public class User {
     @Field
     private String zcId;//主城id
     @Field
+    private Integer cssl = 1;//城市数量
+    @Field
     private Integer hj = 0;//黄金
     @Field
     private Integer tq = 0;//铜钱
