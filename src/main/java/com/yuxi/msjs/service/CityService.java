@@ -5,9 +5,7 @@ import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.lang.UUID;
 import com.yuxi.msjs.bean.Bzzy;
 import com.yuxi.msjs.bean.Jianzhu;
-import com.yuxi.msjs.bean.entity.HomeUp;
-import com.yuxi.msjs.bean.entity.UserCity;
-import com.yuxi.msjs.bean.entity.ZhengBing;
+import com.yuxi.msjs.bean.entity.*;
 import com.yuxi.msjs.bean.vo.CityList;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -178,5 +176,50 @@ public class CityService {
     public List<ZhengBing> zbdl(String cityId) {
         Query query = new Query(Criteria.where("cityId").is(cityId));
         return mongoTemplate.find(query, ZhengBing.class);
+    }
+
+
+    public List<Wujiang> xzwj(String userId, String cityId, String name, Integer wl, Integer fy, Integer sd, Integer zl){
+        Wujiang wujiang = new Wujiang();
+        wujiang.setUserId(userId);
+        wujiang.setCityId(cityId);
+        wujiang.setName(name);
+        wujiang.setWl(wl);
+        wujiang.setFy(fy);
+        wujiang.setZl(zl);
+        wujiang.setSd(sd);
+        mongoTemplate.save(wujiang);
+        Query query = new Query(Criteria.where("cityId").is(cityId));
+        return  mongoTemplate.find(query, Wujiang.class);
+    }
+
+    public List<Wujiang> wjlb(String cityId){
+        Query query = new Query(Criteria.where("cityId").is(cityId));
+        return  mongoTemplate.find(query, Wujiang.class);
+    }
+
+    /**
+     * 新增美女
+     * @return
+     */
+    public List<Meinv> xzmv(String userId, String cityId, String name, Integer ly, Integer sc, Integer zl, Integer cy, Integer ml, Integer dj) {
+        Meinv meinv = new Meinv();
+        meinv.setUserId(userId);
+        meinv.setCityId(cityId);
+        meinv.setName(name);
+        meinv.setSc(sc);
+        meinv.setLy(ly);
+        meinv.setCy(cy);
+        meinv.setZl(zl);
+        meinv.setMl(ml);
+        meinv.setDj(dj);
+        mongoTemplate.save(meinv);
+        Query query = new Query(Criteria.where("cityId").is(cityId));
+        return  mongoTemplate.find(query, Meinv.class);
+    }
+
+    public List<Meinv> mvlb(String cityId){
+        Query query = new Query(Criteria.where("cityId").is(cityId));
+        return  mongoTemplate.find(query, Meinv.class);
     }
 }

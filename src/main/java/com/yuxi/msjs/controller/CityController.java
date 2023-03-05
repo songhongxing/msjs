@@ -1,9 +1,7 @@
 package com.yuxi.msjs.controller;
 
 import cn.hutool.core.bean.BeanUtil;
-import com.yuxi.msjs.bean.entity.HomeUp;
-import com.yuxi.msjs.bean.entity.UserCity;
-import com.yuxi.msjs.bean.entity.ZhengBing;
+import com.yuxi.msjs.bean.entity.*;
 import com.yuxi.msjs.service.CityService;
 import com.yuxi.msjs.util.HjArray;
 import com.yuxi.msjs.util.HjDict;
@@ -62,4 +60,30 @@ public class CityController extends BaseController{
         List<ZhengBing> zhengbing = cityService.zbdl(cityId);
         return arrayUtil.toArray(zhengbing, zhengbing.size(), ZhengBing.class);
     }
+
+    @GetMapping("/xzwj")
+    public HjArray xzwj(String userId, String cityId, String name, Integer wl, Integer fy, Integer sd, Integer zl){
+        List<Wujiang> xzwj = cityService.xzwj(userId, cityId, name, wl, fy, sd, zl);
+        return arrayUtil.toArray(xzwj, xzwj.size(), Wujiang.class);
+    }
+
+    @GetMapping("/wjlb")
+    public HjArray wjlb(String cityId){
+        List<Wujiang> wjlb = cityService.wjlb(cityId);
+        return arrayUtil.toArray(wjlb, wjlb.size(), Wujiang.class);
+    }
+
+
+    @GetMapping("/xzmv")
+    public HjArray xzmv(String userId, String cityId, String name, Integer ly, Integer sc, Integer zl, Integer cy, Integer ml, Integer dj){
+        List<Meinv> mvlb = cityService.xzmv(userId, cityId, name, ly, sc, zl, cy, ml, dj);
+        return arrayUtil.toArray(mvlb, mvlb.size(), Meinv.class);
+    }
+
+    @GetMapping("/mvlb")
+    public HjArray xzwj(String cityId){
+        List<Meinv> mvlb = cityService.mvlb(cityId);
+        return arrayUtil.toArray(mvlb, mvlb.size(), Meinv.class);
+    }
+
 }
