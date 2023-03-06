@@ -86,4 +86,16 @@ public class CityController extends BaseController{
         return arrayUtil.toArray(mvlb, mvlb.size(), Meinv.class);
     }
 
+    @GetMapping("/tjmvsx")
+    public HjArray tjmvsx(String userId, String cityId,String name, String sx, Integer sxd){
+        List<Meinv> tjmvsx = cityService.tjmvsx(userId, cityId, name, sx, sxd);
+        return arrayUtil.toArray(tjmvsx, tjmvsx.size(), Meinv.class);
+    }
+
+    @GetMapping("/ynxjsl")
+    public Integer ynxjsl(String userId){
+        return cityService.ynxjsl(userId);
+    }
+
+
 }

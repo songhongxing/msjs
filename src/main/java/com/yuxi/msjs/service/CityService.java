@@ -1,11 +1,16 @@
 package com.yuxi.msjs.service;
 
-import cn.hutool.core.date.DateUnit;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.lang.UUID;
 import com.yuxi.msjs.bean.Bzzy;
+import com.yuxi.msjs.bean.Daoju;
 import com.yuxi.msjs.bean.Jianzhu;
-import com.yuxi.msjs.bean.entity.*;
+import com.yuxi.msjs.bean.entity.HomeUp;
+import com.yuxi.msjs.bean.entity.Meinv;
+import com.yuxi.msjs.bean.entity.UserCity;
+import com.yuxi.msjs.bean.entity.UserDaoju;
+import com.yuxi.msjs.bean.entity.Wujiang;
+import com.yuxi.msjs.bean.entity.ZhengBing;
 import com.yuxi.msjs.bean.vo.CityList;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -15,7 +20,6 @@ import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 @Service
@@ -215,11 +219,49 @@ public class CityService {
         meinv.setDj(dj);
         mongoTemplate.save(meinv);
         Query query = new Query(Criteria.where("cityId").is(cityId));
-        return  mongoTemplate.find(query, Meinv.class);
+        return mongoTemplate.find(query, Meinv.class);
     }
 
-    public List<Meinv> mvlb(String cityId){
+    public List<Meinv> mvlb(String cityId) {
         Query query = new Query(Criteria.where("cityId").is(cityId));
-        return  mongoTemplate.find(query, Meinv.class);
+        return mongoTemplate.find(query, Meinv.class);
+    }
+
+    public List<Meinv> tjmvsx(String userId, String cityId, String name, String sx, Integer sxd) {
+        Query query = new Query(Criteria.where("cityId").is(cityId).and("name").is(name));
+        Meinv meinv = mongoTemplate.findOne(query, Meinv.class);
+        Update update = new Update();
+        if ("礼仪".equals(sx)) {
+            update.set("ly", meinv.getLy() + sxd);
+        } else if ("身材".equals(sx)) {
+            update.set("sc", meinv.getSc() + sxd);
+        } else if ("智力".equals(sx)) {
+            update.set("zl", meinv.getZl() + sxd);
+        } else if ("才艺".equals(sx)) {
+            update.set("cy", meinv.getCy() + sxd);
+        } else if ("魅力".equals(sx)) {
+            update.set("ml", meinv.getMl() + sxd);
+        }
+        mongoTemplate.updateFirst(query, update, "meinv" );
+
+        //扣减道具数量
+        Query daojuQuery = new Query(Criteria.where("userId").is(userId).and("name").is("玉女心经"));
+        UserDaoju daoju = mongoTemplate.findOne(daojuQuery, UserDaoju.class);
+        Update daojuUpdate = new Update();
+        daojuUpdate.set("sl",daoju.getSl()-sxd);
+        mongoTemplate.updateFirst(daojuQuery, daojuUpdate, "daoju");
+
+        Query lbQuery = new Query(Criteria.where("cityId").is(cityId));
+        return mongoTemplate.find(lbQuery, Meinv.class);
+    }
+
+    public Integer ynxjsl(String userId) {
+        Query query = new Query(Criteria.where("userId").is(userId).and("name").is("玉女心经"));
+        UserDaoju one = mongoTemplate.findOne(query, UserDaoju.class);
+        if(one != null){
+            return one.getSl();
+        }
+        return 0;
+
     }
 }
