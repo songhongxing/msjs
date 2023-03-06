@@ -264,4 +264,11 @@ public class CityService {
         return 0;
 
     }
+
+    public List<Meinv> xq(String userId, String cityId, String name) {
+        Query query = new Query(Criteria.where("userId").is(userId).and("cityId").is(cityId).and("name").is(name));
+        mongoTemplate.remove(query, Meinv.class);
+        query =  new Query(Criteria.where("userId").is(userId).and("cityId").is(cityId));
+        return mongoTemplate.find(query, Meinv.class);
+    }
 }

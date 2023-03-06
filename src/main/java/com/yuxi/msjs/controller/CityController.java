@@ -97,5 +97,10 @@ public class CityController extends BaseController{
         return cityService.ynxjsl(userId);
     }
 
+    @GetMapping("/xq")
+    public HjArray tjmvsx(String userId, String cityId,String name){
+        List<Meinv> tjmvsx = cityService.xq(userId, cityId, name);
+        return arrayUtil.toArray(tjmvsx, tjmvsx.size(), Meinv.class);
+    }
 
 }
