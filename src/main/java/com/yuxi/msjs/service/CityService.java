@@ -3,7 +3,6 @@ package com.yuxi.msjs.service;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.lang.UUID;
 import com.yuxi.msjs.bean.Bzzy;
-import com.yuxi.msjs.bean.Daoju;
 import com.yuxi.msjs.bean.Jianzhu;
 import com.yuxi.msjs.bean.entity.HomeUp;
 import com.yuxi.msjs.bean.entity.Meinv;
@@ -27,15 +26,18 @@ public class CityService {
 
     @Autowired
     private MongoTemplate mongoTemplate;
+    @Autowired
+    private DaojuService daojuService;
 
 
     /**
      * 创建城市
+     *
      * @param userId
      * @param userName
      * @param zuobiao
      */
-    public UserCity createCity(String userId, String userName, Integer zuobiao){
+    public UserCity createCity(String userId, String userName, Integer zuobiao) {
         UserCity userCity = new UserCity();
         userCity.setCityId(UUID.randomUUID().toString().replaceAll("-", ""));
         userCity.setUserId(userId);
@@ -242,23 +244,17 @@ public class CityService {
         } else if ("魅力".equals(sx)) {
             update.set("ml", meinv.getMl() + sxd);
         }
-        mongoTemplate.updateFirst(query, update, "meinv" );
-
+        mongoTemplate.updateFirst(query, update, "meinv");
         //扣减道具数量
-        Query daojuQuery = new Query(Criteria.where("userId").is(userId).and("name").is("玉女心经"));
-        UserDaoju daoju = mongoTemplate.findOne(daojuQuery, UserDaoju.class);
-        Update daojuUpdate = new Update();
-        daojuUpdate.set("sl",daoju.getSl()-sxd);
-        mongoTemplate.updateFirst(daojuQuery, daojuUpdate, "daoju");
-
+        daojuService.djsy(userId, "玉女心经", 1);
         Query lbQuery = new Query(Criteria.where("cityId").is(cityId));
         return mongoTemplate.find(lbQuery, Meinv.class);
     }
 
-    public Integer ynxjsl(String userId) {
-        Query query = new Query(Criteria.where("userId").is(userId).and("name").is("玉女心经"));
+    public Integer ynxjsl(String userId, String name) {
+        Query query = new Query(Criteria.where("userId").is(userId).and("name").is(name));
         UserDaoju one = mongoTemplate.findOne(query, UserDaoju.class);
-        if(one != null){
+        if (one != null) {
             return one.getSl();
         }
         return 0;
@@ -268,7 +264,90 @@ public class CityService {
     public List<Meinv> xq(String userId, String cityId, String name) {
         Query query = new Query(Criteria.where("userId").is(userId).and("cityId").is(cityId).and("name").is(name));
         mongoTemplate.remove(query, Meinv.class);
-        query =  new Query(Criteria.where("userId").is(userId).and("cityId").is(cityId));
+        query = new Query(Criteria.where("userId").is(userId).and("cityId").is(cityId));
         return mongoTemplate.find(query, Meinv.class);
     }
+
+    /**
+     * 添加武将
+     */
+    public List<Wujiang> tjwj(String userId, String cityId, String name, Integer xj, Integer wl, Integer fy, Integer sd, Integer zl) {
+        Wujiang wujiang = new Wujiang();
+        wujiang.setUserId(userId);
+        wujiang.setCityId(cityId);
+        wujiang.setName(name);
+        wujiang.setXj(xj);
+        wujiang.setWl(wl);
+        wujiang.setFy(fy);
+        wujiang.setSd(sd);
+        wujiang.setZl(zl);
+        wujiang.setWjId(UUID.randomUUID().toString().replaceAll("-", ""));
+        mongoTemplate.save(wujiang);
+        Query query = new Query(Criteria.where("cityId").is(cityId));
+        return mongoTemplate.find(query, Wujiang.class);
+    }
+
+    /**
+     * 添加武将经验
+     *
+     * @param wjId
+     * @param sl
+     */
+    public List<Wujiang> wjjy(String wjId, Integer sl) {
+        Query query = new Query(Criteria.where("wjId").is(wjId));
+        Wujiang wujiang = mongoTemplate.findOne(query, Wujiang.class);
+        Integer jy = wujiang.getJy();
+        jy = jy + sl * 5000;//每个卷轴5000经验
+        Integer olddj = wujiang.getDj();//当前等级
+        Integer sxjy = wujiang.getSjsx();//所需经验
+        Integer xdj = sj(jy, olddj);//新等级
+        Update update = new Update();
+        update.set("dj", xdj);
+        update.set("sjsx", 10000 + 200 * xdj * xdj);
+        //新等级大于旧等级的时候,对武将的属性进行加点
+        if (xdj > olddj) {
+            int sjs = xdj - olddj;
+            update.set("wl", wujiang.getWl() + sjs > 60 + wujiang.getXj() * 10 ? 60 + wujiang.getXj() * 10 : wujiang.getWl() + sjs);
+            update.set("fy", wujiang.getFy() + sjs > 60 + wujiang.getXj() * 10 ? 60 + wujiang.getXj() * 10 : wujiang.getFy() + sjs);
+            update.set("sd", wujiang.getSd() + sjs > 60 + wujiang.getXj() * 10 ? 60 + wujiang.getXj() * 10 : wujiang.getSd() + sjs);
+            update.set("zl", wujiang.getZl() + sjs > 60 + wujiang.getXj() * 10 ? 60 + wujiang.getXj() * 10 : wujiang.getZl() + sjs);
+        }
+        mongoTemplate.updateFirst(query, update, Wujiang.class);
+        query = new Query(Criteria.where("cityId").is(wujiang.getCityId()));
+        return mongoTemplate.find(query, Wujiang.class);
+    }
+
+    /**
+     * 根据经验返回等级
+     *
+     * @param jy
+     * @param dj
+     * @return
+     */
+    private Integer sj(Integer jy, Integer dj) {
+        Integer sxjy = 10000 + 200 * dj * dj;
+        while (jy > sxjy) {
+            sxjy = 10000 + 200 * dj * dj;
+            jy = jy - sxjy;
+            dj += 1;
+        }
+        return dj;
+    }
+
+//    public static void main(String[] args) {
+//        Integer dj = 0;//当前等级
+//        Integer jy = 0;
+//        Integer sxjy = 10000;//所需经验
+//        Integer sl = 12;
+//        jy = jy + sl * 5000;
+//        while (jy > sxjy) {
+//            sxjy = 10000 + 200*dj*dj;
+//            jy = jy - sxjy;
+//            dj += 1;
+//        }
+//        System.out.println(jy);
+//        System.out.println(dj);
+//        System.out.println(sxjy);
+//        System.out.println(10000 + 106*(10-1)*(10-1));
+//    }
 }

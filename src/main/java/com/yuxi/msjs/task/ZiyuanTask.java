@@ -133,6 +133,18 @@ public class ZiyuanTask {
             }
         }
 
+        //计算城市总兵力
+        List<UserCity> cityList = mongoTemplate.findAll(UserCity.class);
+        Query bingliQuery;
+        Update bingliUpdate = new Update();
+        if(CollUtil.isNotEmpty(cityList)){
+            for(UserCity city : cityList){
+                bingliQuery = new Query(Criteria.where("cityId").is(city.getCityId()));
+                int zbl = city.getBb()+city.getQb()+city.getNb()+city.getQq()+city.getHq()+city.getZq()+city.getCh()+city.getGb()+city.getCc()+city.getTsc();
+                bingliUpdate.set("zbl", zbl);
+                mongoTemplate.updateFirst(bingliQuery, bingliUpdate, "user_city");
+            }
+        }
     }
 
     /**

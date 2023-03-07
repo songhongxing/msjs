@@ -48,5 +48,25 @@ public class DaojuService {
         return userDaojus;
     }
 
+    /**
+     * 道具使用
+     * @author songhongxing
+     * @date 2023/03/07 10:02 上午
+     */
+    public void djsy(String userId,String name, Integer sl){
+        Query query = new Query(Criteria.where("userId").is(userId).and("name").is(name));
+        UserDaoju daoju = mongoTemplate.findOne(query, UserDaoju.class);
+        //计算剩余数量
+        int sy = daoju.getSl() - sl;
+        //如果剩余数量=0,把这个记录删除
+        if(sy == 0){
+            mongoTemplate.remove(query, UserDaoju.class);
+        } else {
+            Update update = new Update();
+            update.set("sl", sy);
+            mongoTemplate.updateFirst(query, update, UserDaoju.class);
+        }
+
+    }
 
 }

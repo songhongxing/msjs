@@ -9,45 +9,53 @@ import org.springframework.data.mongodb.core.mapping.Field;
 public class Wujiang {
 
     @Field
-    private String userId;
+    private String userId;//0
     @Field
-    private String cityId;
+    private String cityId;//1
     @Field
-    private String name;//武将名称
+    private String name;//武将名称//2
     @Field
-    private Integer dj = 1;//等级
+    private Integer dj = 1;//等级//3
     @Field
-    private Integer jy = 0;//经验
+    private Integer jy = 0;//经验4
     @Field
-    private Integer wl;//武力
+    private Integer sjsx = 0;//升级所需5
     @Field
-    private Integer fy;//防御
+    private Integer wl;//武力6
     @Field
-    private Integer sd;//速度
+    private Integer fy;//防御7
     @Field
-    private Integer zl;//智力
+    private Integer sd;//速度8
     @Field
-    private Integer wljd=0;//武力加点
+    private Integer zl;//智力9
     @Field
-    private Integer fyjd=0;//防御加点
+    private Integer wljd=0;//武力加点10
     @Field
-    private Integer sdjd=0;//速度加点
+    private Integer fyjd=0;//防御加点11
     @Field
-    private Integer zljd=0;//智力加点
+    private Integer sdjd=0;//速度加点12
     @Field
-    private String wq="";//武器
+    private Integer zljd=0;//智力加点13
     @Field
-    private String fj="";//防具
+    private String wq="";//武器14
     @Field
-    private String zq="";//坐骑
+    private String fj="";//防具15
     @Field
-    private String sp="";//饰品
+    private String zq="";//坐骑16
     @Field
-    private String jn1="无";//技能1
+    private String sp="";//饰品17
     @Field
-    private String jn2="锁";//技能2
+    private String jn1="无";//技能118
     @Field
-    private String jn3="锁";//技能3
+    private String jn2="锁";//技能2 19
     @Field
-    private Integer yjj = 0;//易筋经
+    private String jn3="锁";//技能3 20
+    @Field
+    private Integer yjj = 0;//易筋经 21
+    @Field
+    private Integer czzt = 0;//出征状态 22
+    @Field
+    private Integer xj=0;//星级23;
+    @Field
+    private String wjId;//武将id 24
 }

@@ -92,9 +92,9 @@ public class CityController extends BaseController{
         return arrayUtil.toArray(tjmvsx, tjmvsx.size(), Meinv.class);
     }
 
-    @GetMapping("/ynxjsl")
-    public Integer ynxjsl(String userId){
-        return cityService.ynxjsl(userId);
+    @GetMapping("/djsl")
+    public Integer ynxjsl(String userId, String name){
+        return cityService.ynxjsl(userId, name);
     }
 
     @GetMapping("/xq")
@@ -102,5 +102,18 @@ public class CityController extends BaseController{
         List<Meinv> tjmvsx = cityService.xq(userId, cityId, name);
         return arrayUtil.toArray(tjmvsx, tjmvsx.size(), Meinv.class);
     }
+
+    @GetMapping("/tjwj")
+    public HjArray tjwj(String userId, String cityId, String name,Integer xj, Integer wl, Integer fy, Integer sd, Integer zl){
+        List<Wujiang> tjwj = cityService.tjwj(userId, cityId, name, xj, wl, fy, sd, zl);
+        return arrayUtil.toArray(tjwj, tjwj.size(), Wujiang.class);
+    }
+
+    @GetMapping("/wjjy")
+    public HjArray zjjyz(String wjId, Integer sl){
+        List<Wujiang> wjjy = cityService.wjjy(wjId, sl);
+        return arrayUtil.toArray(wjjy, wjjy.size(), Wujiang.class);
+    }
+
 
 }
