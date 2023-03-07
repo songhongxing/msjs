@@ -115,5 +115,11 @@ public class CityController extends BaseController{
         return arrayUtil.toArray(wjjy, wjjy.size(), Wujiang.class);
     }
 
+    @GetMapping("/wjfz")
+    public HjArray zjjyz(String cityId, String wjId){
+        List<Wujiang> wjjy = cityService.wjfz(cityId, wjId);
+        return arrayUtil.toArray(wjjy, wjjy.size(), Wujiang.class);
+    }
+
 
 }
