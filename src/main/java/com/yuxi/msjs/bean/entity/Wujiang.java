@@ -19,7 +19,7 @@ public class Wujiang {
     @Field
     private Integer jy = 0;//经验4
     @Field
-    private Integer sjsx = 0;//升级所需5
+    private Integer sjsx = 10000;//升级所需5
     @Field
     private Integer wl;//武力6
     @Field
