@@ -1,7 +1,7 @@
 package com.yuxi.msjs.controller;
 
 import cn.hutool.core.collection.ListUtil;
-import com.yuxi.msjs.bean.Xtxx;
+import com.yuxi.msjs.bean.entity.Xtxx;
 import com.yuxi.msjs.service.XtxxService;
 import com.yuxi.msjs.util.HjArray;
 import org.springframework.beans.factory.annotation.Autowired;

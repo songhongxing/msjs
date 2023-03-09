@@ -11,84 +11,84 @@ public class UserCity {
 
     @Field
     @Indexed
-    private String cityId;//城市id
+    private String cityId;//城市id 0
     @Field
-    private String userId;//用户id
+    private String userId;//用户id 1
     @Field
-    private String cityName;//城市名称
+    private String cityName;//城市名称 2
     @Field
-    private Integer zuobiao;//坐标
+    private Integer zuobiao;//坐标 3
     @Field
-    private Integer mucc = 5000;//木存储
+    private Integer mucc = 50000;//木存储 4
     @Field
-    private Integer mucl = 1000;//木产量
+    private Integer mucl = 100;//木产量 5
     @Field
-    private Integer shicc = 5000;//石存储
+    private Integer shicc = 50000;//石存储 6
     @Field
-    private Integer shicl = 1000;//石产量
+    private Integer shicl = 100;//石产量 7
     @Field
-    private Integer tiecc = 5000;//铁存储
+    private Integer tiecc = 50000;//铁存储 8
     @Field
-    private Integer tiecl = 1000;//铁产量
+    private Integer tiecl = 100;//铁产量 9
     @Field
-    private Integer liangcc = 5000;//粮存储
+    private Integer liangcc = 50000;//粮存储 10
     @Field
-    private Integer liangcl = 1000;//粮产量
+    private Integer liangcl = 100;//粮产量 11
     @Field
-    private Integer nzt = 0;//内政厅
+    private Integer nzt = 0;//内政厅 12
     @Field
-    private Integer tqt = 0;//铜雀台
+    private Integer tqt = 0;//铜雀台 13
     @Field
-    private Integer jg = 0;//酒馆
+    private Integer jg = 0;//酒馆 14
     @Field
-    private Integer js = 0;//集市
+    private Integer js = 0;//集市 15
     @Field
-    private Integer by = 0;//兵营
+    private Integer by = 0;//兵营 16
     @Field
-    private Integer lc = 0;//粮仓
+    private Integer lc = 0;//粮仓 17
     @Field
-    private Integer ck = 0;//仓库
+    private Integer ck = 0;//仓库 18
     @Field
-    private Integer ac = 0;//暗仓
+    private Integer ac = 0;//暗仓 19
     @Field
-    private Integer cq = 0;//城墙
+    private Integer cq = 0;//城墙 20
     @Field
-    private Integer ckcc = 10000;//仓库存储
+    private Integer ckcc = 10000;//仓库存储 21
     @Field
-    private Integer lccc = 10000;//粮仓存储
+    private Integer lccc = 10000;//粮仓存储 22
     @Field
-    private Integer bb = 0;//步兵
+    private Integer bb = 0;//步兵 23
     @Field
-    private Integer qb = 0;//枪兵
+    private Integer qb = 0;//枪兵 24
     @Field
-    private Integer nb = 0;//弩兵
+    private Integer nb = 0;//弩兵 25
     @Field
-    private Integer qq = 0;//轻骑
+    private Integer qq = 0;//轻骑 26
     @Field
-    private Integer hq = 0;//虎骑兵
+    private Integer hq = 0;//虎骑兵 27
     @Field
-    private Integer zq = 0;//重骑
+    private Integer zq = 0;//重骑 28
     @Field
-    private Integer ch = 0;//斥候
+    private Integer ch = 0;//斥候 29
     @Field
-    private Integer cc = 0;//冲车
+    private Integer cc = 0;//冲车 30
     @Field
-    private Integer tsc = 0;//投石车
+    private Integer tsc = 0;//投石车 31
     @Field
-    private Integer gb = 0;//工兵
+    private Integer gb = 0;//工兵 32
     @Field
-    private Integer zhl = 0;//总耗粮
+    private Integer zhl = 0;//总耗粮 33
     @Field
-    private Integer zbl = 0;//总兵力
+    private Integer zbl = 0;//总兵力 34
     @Field
-    private Integer linchang = 0;//林场
+    private Integer linchang = 0;//林场 35
     @Field
-    private Integer shikuang = 0;//石矿等级
+    private Integer shikuang = 0;//石矿等级 36
     @Field
-    private Integer tiekuang = 0;//铁矿
+    private Integer tiekuang = 0;//铁矿 37
     @Field
-    private Integer nongtian = 0;//农田
+    private Integer nongtian = 0;//农田 38
     @Field
-    private Integer zgm = 0;//总规模
+    private Integer zgm = 0;//总规模 39
 
 }

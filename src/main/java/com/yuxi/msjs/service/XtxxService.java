@@ -1,8 +1,8 @@
 package com.yuxi.msjs.service;
 
 import cn.hutool.core.collection.CollUtil;
-import com.yuxi.msjs.bean.Xtxx;
-import com.yuxi.msjs.bean.Ydxx;
+import com.yuxi.msjs.bean.entity.Xtxx;
+import com.yuxi.msjs.bean.entity.Ydxx;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;

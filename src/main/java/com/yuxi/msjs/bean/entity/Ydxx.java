@@ -1,4 +1,4 @@
-package com.yuxi.msjs.bean;
+package com.yuxi.msjs.bean.entity;
 
 import lombok.Data;
 import org.springframework.data.mongodb.core.mapping.Document;
