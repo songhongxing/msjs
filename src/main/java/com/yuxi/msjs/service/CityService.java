@@ -2,8 +2,23 @@ package com.yuxi.msjs.service;
 
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.lang.UUID;
-import com.yuxi.msjs.bean.Bzzy;
-import com.yuxi.msjs.bean.Jianzhu;
+import cn.hutool.core.map.MapUtil;
+import com.yuxi.msjs.bean.conste.Acsj;
+import com.yuxi.msjs.bean.conste.Bysj;
+import com.yuxi.msjs.bean.conste.Bzzy;
+import com.yuxi.msjs.bean.conste.Chanliang;
+import com.yuxi.msjs.bean.conste.Cksj;
+import com.yuxi.msjs.bean.conste.Cqsj;
+import com.yuxi.msjs.bean.conste.Jgsj;
+import com.yuxi.msjs.bean.conste.Jianzhu;
+import com.yuxi.msjs.bean.conste.Jssj;
+import com.yuxi.msjs.bean.conste.Lcsj;
+import com.yuxi.msjs.bean.conste.Ntsj;
+import com.yuxi.msjs.bean.conste.Nztsj;
+import com.yuxi.msjs.bean.conste.Rongliang;
+import com.yuxi.msjs.bean.conste.Sksj;
+import com.yuxi.msjs.bean.conste.Tksj;
+import com.yuxi.msjs.bean.conste.Tqtsj;
 import com.yuxi.msjs.bean.entity.HomeUp;
 import com.yuxi.msjs.bean.entity.Meinv;
 import com.yuxi.msjs.bean.entity.UserCity;
@@ -19,7 +34,9 @@ import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class CityService {
@@ -94,25 +111,171 @@ public class CityService {
      * @date 2023/02/28 4:55 下午
      */
     public List<HomeUp> jzshengji(String cityId, String jzName, Integer jzdj, Integer sjsj) {
-        HomeUp homeUp = new HomeUp();
-        homeUp.setCityId(cityId);
-        homeUp.setJzName(jzName);
-        homeUp.setJzdj(jzdj+1);
-        long dqsj = System.currentTimeMillis() / 1000 + sjsj;
-        homeUp.setDqsj((int) dqsj);
-        mongoTemplate.save(homeUp);
+
+        //根据升级建筑和等级扣减资源
         Query query = new Query(Criteria.where("cityId").is(cityId));
+        UserCity userCity = mongoTemplate.findOne(query, UserCity.class);
+        Map<String, Object> sjzy = getSjzy(jzName, userCity);
+        boolean flag = false;//判断城内资源是否足够升级
+        int mu = MapUtil.getInt(sjzy, "mu");
+        int shi = MapUtil.getInt(sjzy, "shi");
+        int tie = MapUtil.getInt(sjzy, "tie");
+        int liang = MapUtil.getInt(sjzy, "liang");
+        int sj = MapUtil.getInt(sjzy, "sj");
+        int dj = MapUtil.getInt(sjzy, "dj");
+        if (mu > userCity.getMucc()) {
+            flag = true;
+        }
+        if (shi > userCity.getShicc()) {
+            flag = true;
+        }
+        if (tie > userCity.getTiecc()) {
+            flag = true;
+        }
+        if (liang > userCity.getLiangcc()) {
+            flag = true;
+        }
+        //资源足够的情况下才能创建队列
+        if (flag == false) {
+            HomeUp homeUp = new HomeUp();
+            homeUp.setCityId(cityId);
+            homeUp.setJzName(jzName);
+            homeUp.setJzdj(dj);
+            int dqsj = (int) DateUtil.currentSeconds() + sj;
+            homeUp.setDqsj(dqsj);
+            mongoTemplate.save(homeUp);
+            //扣减城内资源
+            Update update = new Update();
+            update.set("mucc", userCity.getMucc() - mu);
+            update.set("shicc", userCity.getShicc() - shi);
+            update.set("tiecc", userCity.getTiecc() - tie);
+            update.set("liangcc", userCity.getLiangcc() - liang);
+            mongoTemplate.updateFirst(query, update, UserCity.class);
+        }
+
         return mongoTemplate.find(query, HomeUp.class);
+    }
+
+    private Map<String, Object> getSjzy(String jzName, UserCity userCity) {
+        Map<String, Object> result = new HashMap<>();
+        int jzDj = 0;
+        if (jzName.equals("内政厅")) {
+            jzDj = userCity.getNzt() + 1;
+            result.put("mu", Nztsj.getMuz(jzDj));
+            result.put("shi", Nztsj.getShiz(jzDj));
+            result.put("tie", Nztsj.getTiez(jzDj));
+            result.put("liang", Nztsj.getLiangz(jzDj));
+            result.put("sj", Nztsj.getShijian(jzDj));
+            result.put("dj", jzDj);
+        } else if (jzName.equals("铜雀台")) {
+            jzDj = userCity.getTqt() + 1;
+            result.put("mu", Tqtsj.getMuz(jzDj));
+            result.put("shi", Tqtsj.getShiz(jzDj));
+            result.put("tie", Tqtsj.getTiez(jzDj));
+            result.put("liang", Tqtsj.getLiangz(jzDj));
+            result.put("sj", Tqtsj.getShijian(jzDj));
+            result.put("dj", jzDj);
+        } else if (jzName.equals("兵营")) {
+            jzDj = userCity.getBy() + 1;
+            result.put("mu", Bysj.getMuz(jzDj));
+            result.put("shi", Bysj.getShiz(jzDj));
+            result.put("tie", Bysj.getTiez(jzDj));
+            result.put("liang", Bysj.getLiangz(jzDj));
+            result.put("sj", Bysj.getShijian(jzDj));
+            result.put("dj", jzDj);
+        } else if (jzName.equals("酒馆")) {
+            jzDj = userCity.getJg() + 1;
+            result.put("mu", Jgsj.getMuz(jzDj));
+            result.put("shi", Jgsj.getShiz(jzDj));
+            result.put("tie", Jgsj.getTiez(jzDj));
+            result.put("liang", Jgsj.getLiangz(jzDj));
+            result.put("sj", Jgsj.getShijian(jzDj));
+            result.put("dj", jzDj);
+        } else if (jzName.equals("集市")) {
+            jzDj = userCity.getJs() + 1;
+            result.put("mu", Jssj.getMuz(jzDj));
+            result.put("shi", Jssj.getShiz(jzDj));
+            result.put("tie", Jssj.getTiez(jzDj));
+            result.put("liang", Jssj.getLiangz(jzDj));
+            result.put("sj", Jssj.getShijian(jzDj));
+            result.put("dj", jzDj);
+        } else if (jzName.equals("仓库")) {
+            jzDj = userCity.getCk() + 1;
+            result.put("mu", Cksj.getMuz(jzDj));
+            result.put("shi", Cksj.getShiz(jzDj));
+            result.put("tie", Cksj.getTiez(jzDj));
+            result.put("liang", Cksj.getLiangz(jzDj));
+            result.put("sj", Cksj.getShijian(jzDj));
+            result.put("dj", jzDj);
+        } else if (jzName.equals("粮仓")) {
+            jzDj = userCity.getLc() + 1;
+            result.put("mu", Lcsj.getMuz(jzDj));
+            result.put("shi", Lcsj.getShiz(jzDj));
+            result.put("tie", Lcsj.getTiez(jzDj));
+            result.put("liang", Lcsj.getLiangz(jzDj));
+            result.put("sj", Lcsj.getShijian(jzDj));
+            result.put("dj", jzDj);
+        } else if (jzName.equals("暗仓")) {
+            jzDj = userCity.getAc() + 1;
+            result.put("mu", Acsj.getMuz(jzDj));
+            result.put("shi", Acsj.getShiz(jzDj));
+            result.put("tie", Acsj.getTiez(jzDj));
+            result.put("liang", Acsj.getLiangz(jzDj));
+            result.put("sj", Acsj.getShijian(jzDj));
+            result.put("dj", jzDj);
+        } else if (jzName.equals("城墙")) {
+            jzDj = userCity.getCq() + 1;
+            result.put("mu", Cqsj.getMuz(jzDj));
+            result.put("shi", Cqsj.getShiz(jzDj));
+            result.put("tie", Cqsj.getTiez(jzDj));
+            result.put("liang", Cqsj.getLiangz(jzDj));
+            result.put("sj", Cqsj.getShijian(jzDj));
+            result.put("dj", jzDj);
+        } else if (jzName.equals("农田")) {
+            jzDj = userCity.getNongtian() + 1;
+            result.put("mu", Ntsj.getMuz(jzDj));
+            result.put("shi", Ntsj.getShiz(jzDj));
+            result.put("tie", Ntsj.getTiez(jzDj));
+            result.put("liang", Ntsj.getLiangz(jzDj));
+            result.put("sj", Ntsj.getShijian(jzDj));
+            result.put("dj", jzDj);
+        } else if (jzName.equals("林场")) {
+            jzDj = userCity.getLinchang() + 1;
+            result.put("mu", Lcsj.getMuz(jzDj));
+            result.put("shi", Lcsj.getShiz(jzDj));
+            result.put("tie", Lcsj.getTiez(jzDj));
+            result.put("liang", Lcsj.getLiangz(jzDj));
+            result.put("sj", Lcsj.getShijian(jzDj));
+            result.put("dj", jzDj);
+        } else if (jzName.equals("铁矿")) {
+            jzDj = userCity.getTiekuang() + 1;
+            result.put("mu", Tksj.getMuz(jzDj));
+            result.put("shi", Tksj.getShiz(jzDj));
+            result.put("tie", Tksj.getTiez(jzDj));
+            result.put("liang", Tksj.getLiangz(jzDj));
+            result.put("sj", Tksj.getShijian(jzDj));
+            result.put("dj", jzDj);
+        } else if (jzName.equals("石矿")) {
+            jzDj = userCity.getShikuang() + 1;
+            result.put("mu", Sksj.getMuz(jzDj));
+            result.put("shi", Sksj.getShiz(jzDj));
+            result.put("tie", Sksj.getTiez(jzDj));
+            result.put("liang", Sksj.getLiangz(jzDj));
+            result.put("sj", Sksj.getShijian(jzDj));
+            result.put("dj", jzDj);
+        }
+        return result;
     }
 
     /**
      * 建筑升级完成
+     *
      * @param cityId
      * @param jzName
      * @author songhongxing
      * @date 2023/02/28 5:02 下午
      */
-    public List<HomeUp> sjwc(String cityId, String jzName){
+    public List<HomeUp> sjwc(String cityId, String jzName) {
         //删除建筑队列
         Query query = new Query();
         query.addCriteria(Criteria.where("cityId").is(cityId).and("jzName").is(jzName));
@@ -124,7 +287,39 @@ public class CityService {
         UserCity userCity = mongoTemplate.findOne(query, UserCity.class);
         Update update = new Update();
         update.set(Jianzhu.getKeyByValue(jzName), homeUp.getJzdj());
-        update.set("zgm", userCity.getZgm() + 10);
+        update.set("zgm", userCity.getZgm() + 1);
+        //如果是资源田的升级,需要更新产量
+        if (jzName.equals("农田")) {
+            Integer liangcl = userCity.getLiangcl();//当前产量
+            Integer oldchanliang = Chanliang.getChanliang(userCity.getNongtian());//上一级的产量
+            Integer newchanliang = Chanliang.getChanliang(userCity.getNongtian() + 1);//下一级的产量
+            newchanliang = liangcl - oldchanliang + newchanliang;
+            update.set("liangcl", newchanliang);
+        } else if (jzName.equals("林场")) {
+            Integer cl = userCity.getMucl();//当前产量
+            Integer oldchanliang = Chanliang.getChanliang(userCity.getLinchang());//上一级的产量
+            Integer newchanliang = Chanliang.getChanliang(userCity.getLinchang() + 1);//下一级的产量
+            newchanliang = cl - oldchanliang + newchanliang;
+            update.set("mucl", newchanliang);
+        } else if (jzName.equals("石矿")) {
+            Integer cl = userCity.getShicl();//当前产量
+            Integer oldchanliang = Chanliang.getChanliang(userCity.getShikuang());//上一级的产量
+            Integer newchanliang = Chanliang.getChanliang(userCity.getShikuang() + 1);//下一级的产量
+            newchanliang = cl - oldchanliang + newchanliang;
+            update.set("shicl", newchanliang);
+        } else if (jzName.equals("铁矿")) {
+            Integer cl = userCity.getTiecl();//当前产量
+            Integer oldchanliang = Chanliang.getChanliang(userCity.getTiekuang());//上一级的产量
+            Integer newchanliang = Chanliang.getChanliang(userCity.getTiekuang() + 1);//下一级的产量
+            newchanliang = cl - oldchanliang + newchanliang;
+            update.set("tiecl", newchanliang);
+        } else if (jzName.equals("仓库")) {
+            Integer rl = Rongliang.getRongliang(userCity.getCk() + 1);
+            update.set("ckcc", rl);
+        } else if (jzName.equals("粮仓")) {
+            Integer rl = Rongliang.getRongliang(userCity.getLc() + 1);
+            update.set("lccc", rl);
+        }
         mongoTemplate.updateFirst(query, update, UserCity.class);
         return mongoTemplate.find(query, HomeUp.class);
     }

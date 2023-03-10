@@ -1,27 +1,32 @@
-package com.yuxi.msjs.bean;
-public enum Sksj {
+package com.yuxi.msjs.bean.conste;
 
-    YIJI(1,417,333,833,500,20),
-    ERJI(2,708,567,1417,850,40),
-    SANJI(3,1167,933,2333,1400,80),
-    SIJI(4,1958,1567,3917,2350,160),
-    WUJI(5,3250,2600,6500,3900,320),
-    LIUJI(6,5417,4333,10833,6500,640),
-    QIJI(7,9042,7233,18083,10850,1291),
-    BAJI(8,15083,12067,30167,18100,2560),
-    JIUJI(9,25208,20167,50417,30250,5140),
-    SHIJI(10,42083,33667,84167,50500,9755),
-    SHIYI(11,70292,53233,140583,84350,16335),
-    SHIER(12,117417,93933,234833,140900,26127),
-    SHISAN(13,196042,156833,392083,235250,36747),
-    SHISI(14,327417,261933,654833,392900,63997),
-    SHIWU(15,546792,437433,1093583,656150,91962),
-    SHILIU(16,913125,730500,1826250,1095750,123527),
-    SHIQI(17,1524958,1219967,3049917,1829950,153287),
-    SHIBA(18,2546667,2037333,5093333,305600,193703),
-    SHIJIU(19,4252917,3402333,8505833,5103500,244343),
-    ERSHI(20,7102333,5681867,14204667,8522800,301440);
-
+/**
+ * 城墙升级消耗
+ *
+ * @author songhongxing
+ * @date 2023/03/09 1:37 下午
+ */
+public enum Cqsj {
+    YIJI(1,1400,1750,1225,700,60),
+    ERJI(2,1800,2250,1575,900,93),
+    SANJI(3,2300,2875,2013,1150,144),
+    SIJI(4,2900,3625,2538,1450,223),
+    WUJI(5,3800,4750,3325,1900,346),
+    LIUJI(6,4800,6000,4200,2400,537),
+    QIJI(7,6200,7750,5425,3100,832),
+    BAJI(8,7900,9875,6913,3950,1284),
+    JIUJI(9,10100,12620,8838,5050,1981),
+    SHIJI(10,12900,16125,11288,6450,3014),
+    SHIYI(11,16500,20625,14438,8250,4809),
+    SHIER(12,21200,26500,18550,10600,6969),
+    SHISAN(13,27100,33875,23713,13550,9737),
+    SHISI(14,34700,43375,30363,17350,14537),
+    SHIWU(15,44400,55500,38850,22200,19757),
+    SHILIU(16,56800,71000,49700,28400,26079),
+    SHIQI(17,27200,90875,63613,36350,36017),
+    SHIBA(18,93000,116250,81375,46500,44503),
+    SHIJIU(19,119100,148875,104213,59550,54888),
+    ERSHI(20,152400,190500,133350,76200,69821);
 
     private Integer dj;
     private Integer mu;
@@ -30,7 +35,7 @@ public enum Sksj {
     private Integer liang;
     private Integer sj;
 
-    Sksj(Integer dj, Integer mu, Integer shi, Integer tie, Integer liang, Integer sj) {
+    Cqsj(Integer dj, Integer mu, Integer shi, Integer tie, Integer liang, Integer sj) {
         this.dj = dj;
         this.mu = mu;
         this.shi = shi;
@@ -88,7 +93,7 @@ public enum Sksj {
     }
 
     public static Integer getMuz(Integer dj) {
-        for (Sksj e : Sksj.values()) {
+        for (Cqsj e : Cqsj.values()) {
             if(e.getDj().equals(dj)){
                 return e.getMu();
             }
@@ -96,7 +101,7 @@ public enum Sksj {
         return null;
     }
     public static Integer getShiz(Integer dj) {
-        for (Sksj e : Sksj.values()) {
+        for (Cqsj e : Cqsj.values()) {
             if(e.getDj().equals(dj)){
                 return e.getShi();
             }
@@ -104,7 +109,7 @@ public enum Sksj {
         return null;
     }
     public static Integer getTiez(Integer dj) {
-        for (Sksj e : Sksj.values()) {
+        for (Cqsj e : Cqsj.values()) {
             if(e.getDj().equals(dj)){
                 return e.getTie();
             }
@@ -112,9 +117,18 @@ public enum Sksj {
         return null;
     }
     public static Integer getLiangz(Integer dj) {
-        for (Sksj e : Sksj.values()) {
+        for (Cqsj e : Cqsj.values()) {
             if(e.getDj().equals(dj)){
                 return e.getLiang();
+            }
+        }
+        return null;
+    }
+
+    public static Integer getShijian(Integer dj) {
+        for (Cqsj e : Cqsj.values()) {
+            if(e.getDj().equals(dj)){
+                return e.getSj();
             }
         }
         return null;

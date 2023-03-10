@@ -1,32 +1,32 @@
-package com.yuxi.msjs.bean;
+package com.yuxi.msjs.bean.conste;
 
 /**
- * 铜雀台升级消耗
+ * 集市升级消耗
  *
  * @author songhongxing
  * @date 2023/03/09 1:37 下午
  */
-public enum Tqtsj {
-    YIJI(1,1400,700,560,700,40),
-    ERJI(2,1800,900,720,900,62),
-    SANJI(3,2300,1150,920,1150,96),
-    SIJI(4,2900,1450,1160,1450,372),
-    WUJI(5,3800,1900,1520,1900,231),
-    LIUJI(6,4800,2400,1920,2400,358),
-    QIJI(7,3200,3100,2480,3100,554),
-    BAJI(8,7900,3950,3160,3950,860),
-    JIUJI(9,10100,5050,4040,5050,1333),
-    SHIJI(10,12900,6450,5160,6450,2065),
-    SHIYI(11,16500,8250,6600,8250,3201),
-    SHIER(12,21200,10600,8480,10600,4960),
-    SHISAN(13,27100,13550,10840,13550,7508),
-    SHISI(14,285200,228160,199640,285200,11550),
-    SHIWU(15,44400,22200,17760,22200,17730),
-    SHILIU(16,56800,28400,22720,28400,19950),
-    SHIQI(17,72700,36350,29080,36350,25542),
-    SHIBA(18,93000,46500,37200,46500,33162),
-    SHIJIU(19,119100,59550,47640,59550,40535),
-    ERSHI(20,152400,76200,60960,76200,56788);
+public enum Jssj {
+    YIJI(1,1167,700,700,700,45),
+    ERJI(2,1500,900,900,900,73),
+    SANJI(3,1917,1150,1150,1150,108),
+    SIJI(4,2417,1450,1450,1450,168),
+    WUJI(5,3167,1900,1900,1900,260),
+    LIUJI(6,4000,2400,2400,2400,403),
+    QIJI(7,5167,3100,3100,3100,624),
+    BAJI(8,6580,3950,3950,3950,978),
+    JIUJI(9,8417,5050,5050,5050,1338),
+    SHIJI(10,10750,6450,6450,6450,1603),
+    SHIYI(11,13750,8250,8250,8250,2904),
+    SHIER(12,17667,10600,10600,10600,3384),
+    SHISAN(13,22583,13550,13550,13550,4007),
+    SHISI(14,28917,17350,17350,17350,7124),
+    SHIWU(15,37000,22200,22200,22200,9936),
+    SHILIU(16,47333,28400,28400,28400,14668),
+    SHIQI(17,60583,36350,36350,36350,23308),
+    SHIBA(18,77500,46500,46500,46500,31897),
+    SHIJIU(19,99250,59550,59550,59550,38797),
+    ERSHI(20,127000, 76200,76200,76200, 51698);
 
     private Integer dj;
     private Integer mu;
@@ -35,7 +35,7 @@ public enum Tqtsj {
     private Integer liang;
     private Integer sj;
 
-    Tqtsj(Integer dj, Integer mu, Integer shi, Integer tie, Integer liang, Integer sj) {
+    Jssj(Integer dj, Integer mu, Integer shi, Integer tie, Integer liang, Integer sj) {
         this.dj = dj;
         this.mu = mu;
         this.shi = shi;
@@ -93,7 +93,7 @@ public enum Tqtsj {
     }
 
     public static Integer getMuz(Integer dj) {
-        for (Tqtsj e : Tqtsj.values()) {
+        for (Jssj e : Jssj.values()) {
             if(e.getDj().equals(dj)){
                 return e.getMu();
             }
@@ -101,7 +101,7 @@ public enum Tqtsj {
         return null;
     }
     public static Integer getShiz(Integer dj) {
-        for (Tqtsj e : Tqtsj.values()) {
+        for (Jssj e : Jssj.values()) {
             if(e.getDj().equals(dj)){
                 return e.getShi();
             }
@@ -109,7 +109,7 @@ public enum Tqtsj {
         return null;
     }
     public static Integer getTiez(Integer dj) {
-        for (Tqtsj e : Tqtsj.values()) {
+        for (Jssj e : Jssj.values()) {
             if(e.getDj().equals(dj)){
                 return e.getTie();
             }
@@ -117,9 +117,18 @@ public enum Tqtsj {
         return null;
     }
     public static Integer getLiangz(Integer dj) {
-        for (Tqtsj e : Tqtsj.values()) {
+        for (Jssj e : Jssj.values()) {
             if(e.getDj().equals(dj)){
                 return e.getLiang();
+            }
+        }
+        return null;
+    }
+
+    public static Integer getShijian(Integer dj) {
+        for (Jssj e : Jssj.values()) {
+            if(e.getDj().equals(dj)){
+                return e.getSj();
             }
         }
         return null;

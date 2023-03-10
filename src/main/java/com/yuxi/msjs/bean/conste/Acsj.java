@@ -1,4 +1,4 @@
-package com.yuxi.msjs.bean;
+package com.yuxi.msjs.bean.conste;
 
 /**
  * 暗仓升级消耗
@@ -120,6 +120,15 @@ public enum Acsj {
         for (Acsj e : Acsj.values()) {
             if(e.getDj().equals(dj)){
                 return e.getLiang();
+            }
+        }
+        return null;
+    }
+
+    public static Integer getShijian(Integer dj) {
+        for (Acsj e : Acsj.values()) {
+            if(e.getDj().equals(dj)){
+                return e.getSj();
             }
         }
         return null;

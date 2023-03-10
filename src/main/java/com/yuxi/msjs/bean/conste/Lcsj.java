@@ -1,32 +1,28 @@
-package com.yuxi.msjs.bean;
+package com.yuxi.msjs.bean.conste;
 
-/**
- * 农田升级消耗
- *
- * @author songhongxing
- * @date 2023/03/09 1:37 下午
- */
-public enum Ntsj {
-    YIJI(1,1000,700,500,200,15),
-    ERJI(2,1750,1225,875,350,30),
-    SANJI(3,2750,1925,1375,550,60),
-    SIJI(4,4750,3325,2375,950,120),
-    WUJI(5,7750,5425,3875,1550,240),
-    LIUJI(6,13000,9100,6500,2600,480),
-    QIJI(7,21750,15225,10875,4350,960),
-    BAJI(8,36250,25375,18125,7250,1920),
-    JIUJI(9,60500,42350,30250,12100,3840),
-    SHIJI(10,101000,70700,50500,20200,7680),
-    SHIYI(11,168750,118125,84375,33750,13800),
-    SHIER(12,281750,197225,140875,56350,24883),
-    SHISAN(13,470500,329350,235250,94100,44790),
-    SHISI(14,785750,550025,392875,157150,76170),
-    SHIWU(15,1312250,918575,656125,262450,129423),
-    SHILIU(16,2191500,1534050,1095750,438300,220023),
-    SHIQI(17,3659750,2561825,1829875,731950,294063),
-    SHIBA(18,6112000,4278400,3056000,122400,350303),
-    SHIJIU(19,1020700,7144900,5103500,2041400,445343),
-    ERSHI(20,7045750,11932025,8522875,3409150,5202836);
+public enum Lcsj {
+
+    YIJI(1,400,1000,400,600,21),
+    ERJI(2,667,1667,667,1000,46),
+    SANJI(3,1100,2750,1100,1650,92),
+    SIJI(4,1867,4667,1867,2800,192),
+    WUJI(5,3100,7750,3100,4650,383),
+    LIUJI(6,5200,13000,5200,7800,768),
+    QIJI(7,8667,21667,8667,13000,1536),
+    BAJI(8,14500,36250,14500,21750,3072),
+    JIUJI(9,24200,60500,24200,36300,6126),
+    SHIJI(10,40400,101000,40400,60600,11046),
+    SHIYI(11,67500,168750,67500,101250,19902),
+    SHIER(12,112700,281750,112700,169050,33692),
+    SHISAN(13,188200,470500,188200,282300,47203),
+    SHISI(14,314333,785833, 314333,471500,72875),
+    SHIWU(15,524933,131233, 524933,787400,113138),
+    SHILIU(16,876600,2191500,876600,1314900,153346),
+    SHIQI(17,1463933,3659833,1463933,2195900,205481),
+    SHIBA(18,2444767,6111917,2444767,3667150,224284),
+    SHIJIU(19,4081600,10204000,4081600,6122400,271864),
+    ERSHI(20,6818027,17045067,6818027,10007040,321571);
+
 
     private Integer dj;
     private Integer mu;
@@ -35,7 +31,7 @@ public enum Ntsj {
     private Integer liang;
     private Integer sj;
 
-    Ntsj(Integer dj, Integer mu, Integer shi, Integer tie, Integer liang, Integer sj) {
+    Lcsj(Integer dj, Integer mu, Integer shi, Integer tie, Integer liang, Integer sj) {
         this.dj = dj;
         this.mu = mu;
         this.shi = shi;
@@ -93,7 +89,7 @@ public enum Ntsj {
     }
 
     public static Integer getMuz(Integer dj) {
-        for (Ntsj e : Ntsj.values()) {
+        for (Lcsj e : Lcsj.values()) {
             if(e.getDj().equals(dj)){
                 return e.getMu();
             }
@@ -101,7 +97,7 @@ public enum Ntsj {
         return null;
     }
     public static Integer getShiz(Integer dj) {
-        for (Ntsj e : Ntsj.values()) {
+        for (Lcsj e : Lcsj.values()) {
             if(e.getDj().equals(dj)){
                 return e.getShi();
             }
@@ -109,7 +105,7 @@ public enum Ntsj {
         return null;
     }
     public static Integer getTiez(Integer dj) {
-        for (Ntsj e : Ntsj.values()) {
+        for (Lcsj e : Lcsj.values()) {
             if(e.getDj().equals(dj)){
                 return e.getTie();
             }
@@ -117,9 +113,17 @@ public enum Ntsj {
         return null;
     }
     public static Integer getLiangz(Integer dj) {
-        for (Ntsj e : Ntsj.values()) {
+        for (Lcsj e : Lcsj.values()) {
             if(e.getDj().equals(dj)){
                 return e.getLiang();
+            }
+        }
+        return null;
+    }
+    public static Integer getShijian(Integer dj) {
+        for (Lcsj e : Lcsj.values()) {
+            if(e.getDj().equals(dj)){
+                return e.getSj();
             }
         }
         return null;

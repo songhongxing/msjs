@@ -3,7 +3,7 @@ package com.yuxi.msjs.task;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
 import com.mongodb.bulk.BulkWriteResult;
-import com.yuxi.msjs.bean.Bingzhong;
+import com.yuxi.msjs.bean.conste.Bingzhong;
 import com.yuxi.msjs.bean.entity.HomeUp;
 import com.yuxi.msjs.bean.entity.UserCity;
 import com.yuxi.msjs.bean.entity.ZhengBing;

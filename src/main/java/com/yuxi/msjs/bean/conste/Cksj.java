@@ -1,4 +1,4 @@
-package com.yuxi.msjs.bean;
+package com.yuxi.msjs.bean.conste;
 
 /**
  * 仓库升级消耗
@@ -120,6 +120,14 @@ public enum Cksj {
         for (Cksj e : Cksj.values()) {
             if(e.getDj().equals(dj)){
                 return e.getLiang();
+            }
+        }
+        return null;
+    }
+    public static Integer getShijian(Integer dj) {
+        for (Cksj e : Cksj.values()) {
+            if(e.getDj().equals(dj)){
+                return e.getSj();
             }
         }
         return null;

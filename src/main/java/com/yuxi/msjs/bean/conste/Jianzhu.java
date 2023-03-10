@@ -1,4 +1,4 @@
-package com.yuxi.msjs.bean;
+package com.yuxi.msjs.bean.conste;
 
 /**
  * 建筑对应关系

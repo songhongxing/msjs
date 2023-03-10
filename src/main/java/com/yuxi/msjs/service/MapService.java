@@ -1,7 +1,7 @@
 package com.yuxi.msjs.service;
 
 import cn.hutool.core.util.RandomUtil;
-import com.yuxi.msjs.bean.Shoujun;
+import com.yuxi.msjs.bean.conste.Shoujun;
 import com.yuxi.msjs.bean.entity.SlgMap;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;

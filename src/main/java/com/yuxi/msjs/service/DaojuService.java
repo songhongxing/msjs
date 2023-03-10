@@ -1,6 +1,6 @@
 package com.yuxi.msjs.service;
 
-import com.yuxi.msjs.bean.Daoju;
+import com.yuxi.msjs.bean.conste.Daoju;
 import com.yuxi.msjs.bean.entity.UserDaoju;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
