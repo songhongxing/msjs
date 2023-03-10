@@ -1,5 +1,6 @@
 package com.yuxi.msjs.service;
 
+import cn.hutool.core.collection.CollUtil;
 import com.yuxi.msjs.bean.conste.Daoju;
 import com.yuxi.msjs.bean.entity.UserDaoju;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,7 +10,9 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * .
@@ -67,6 +70,18 @@ public class DaojuService {
             mongoTemplate.updateFirst(query, update, UserDaoju.class);
         }
 
+    }
+
+    public Map<String, Object> djsl(String userId){
+        Query query = new Query(Criteria.where("userId").is(userId));
+        List<UserDaoju> userDaojus = mongoTemplate.find(query, UserDaoju.class);
+        Map<String, Object> map = new HashMap<>();
+        if(CollUtil.isNotEmpty(userDaojus)){
+            for (UserDaoju userDaoju : userDaojus) {
+                map.put(userDaoju.getName(), userDaoju.getSl());
+            }
+        }
+        return map;
     }
 
 }

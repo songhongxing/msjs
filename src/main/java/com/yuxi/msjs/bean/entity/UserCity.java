@@ -53,9 +53,9 @@ public class UserCity {
     @Field
     private Integer cq = 0;//城墙 20
     @Field
-    private Integer ckcc = 10000;//仓库存储 21
+    private Integer ckcc = 50000;//仓库存储 21
     @Field
-    private Integer lccc = 10000;//粮仓存储 22
+    private Integer lccc = 50000;//粮仓存储 22
     @Field
     private Integer bb = 0;//步兵 23
     @Field
@@ -90,5 +90,7 @@ public class UserCity {
     private Integer nongtian = 0;//农田 38
     @Field
     private Integer zgm = 0;//总规模 39
+    @Field
+    private Integer acrl = 0;//暗仓容量 40
 
 }

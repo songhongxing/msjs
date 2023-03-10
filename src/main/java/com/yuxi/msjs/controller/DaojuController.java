@@ -4,6 +4,7 @@ import cn.hutool.json.JSONUtil;
 import com.yuxi.msjs.bean.entity.UserDaoju;
 import com.yuxi.msjs.service.DaojuService;
 import com.yuxi.msjs.util.HjArray;
+import com.yuxi.msjs.util.HjDict;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * .
@@ -52,4 +54,11 @@ public class DaojuController extends BaseController {
         List<UserDaoju> daojuList = daojuService.lb(userId);
         return arrayUtil.toArray(daojuList, daojuList.size(), UserDaoju.class);
     }
+
+    @GetMapping("/sl")
+    public HjDict djsl(String userId) {
+        Map<String, Object> djsl = daojuService.djsl(userId);
+        return arrayUtil.toDict(djsl);
+    }
+
 }

@@ -121,6 +121,11 @@ public class ZiyuanTask {
                 mongoTemplate.updateFirst(query, update, "user_city");
                 query.addCriteria(Criteria.where("bz").is(zhengBing.getBz()));
                 mongoTemplate.remove(query,"zhengbing");
+                //计算兵种耗粮
+                Integer zhl = cityService.zhl(userCity);
+                update = new Update();
+                update.set("zhl", zhl);
+                mongoTemplate.updateFirst(query, update, "user_city");
             } else {
                 //计算征兵了多久
                 int zbhf = (int)DateUtil.currentSeconds() - zhengBing.getKssj();
@@ -131,6 +136,7 @@ public class ZiyuanTask {
                 update.set("yzm", yzm);
                 mongoTemplate.updateFirst(query, update, "zhengbing");
             }
+
         }
 
         //计算城市总兵力

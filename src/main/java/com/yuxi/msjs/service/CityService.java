@@ -4,6 +4,7 @@ import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.lang.UUID;
 import cn.hutool.core.map.MapUtil;
 import com.yuxi.msjs.bean.conste.Acsj;
+import com.yuxi.msjs.bean.conste.Ancang;
 import com.yuxi.msjs.bean.conste.Bysj;
 import com.yuxi.msjs.bean.conste.Bzzy;
 import com.yuxi.msjs.bean.conste.Chanliang;
@@ -319,6 +320,9 @@ public class CityService {
         } else if (jzName.equals("粮仓")) {
             Integer rl = Rongliang.getRongliang(userCity.getLc() + 1);
             update.set("lccc", rl);
+        } else if (jzName.equals("暗仓")) {
+            Integer rl = Ancang.getRongliang(userCity.getAc() + 1);
+            update.set("acrl", rl);
         }
         mongoTemplate.updateFirst(query, update, UserCity.class);
         return mongoTemplate.find(query, HomeUp.class);
@@ -333,6 +337,26 @@ public class CityService {
         Query query = new Query();
         query.addCriteria(Criteria.where("cityId").is(cityId));
         return mongoTemplate.find(query, HomeUp.class);
+    }
+
+    /**
+     * 计算耗粮
+     * @param userCity
+     * @return
+     */
+    public Integer zhl(UserCity userCity){
+        Integer zhl = 0;
+        zhl += userCity.getBb() * Bzzy.getHaoliang("步兵");
+        zhl += userCity.getQb() * Bzzy.getHaoliang("枪兵");
+        zhl += userCity.getNb() * Bzzy.getHaoliang("弩兵");
+        zhl += userCity.getQq() * Bzzy.getHaoliang("轻骑");
+        zhl += userCity.getHq() * Bzzy.getHaoliang("虎骑");
+        zhl += userCity.getCh() * Bzzy.getHaoliang("斥候");
+        zhl += userCity.getZq() * Bzzy.getHaoliang("重骑");
+        zhl += userCity.getCc() * Bzzy.getHaoliang("冲车");
+        zhl += userCity.getTsc() * Bzzy.getHaoliang("投石车");
+        zhl += userCity.getGb() * Bzzy.getHaoliang("工兵");
+        return zhl;
     }
 
     /**
