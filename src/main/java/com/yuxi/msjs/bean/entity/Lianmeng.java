@@ -15,9 +15,9 @@ import org.springframework.data.mongodb.core.mapping.Field;
 public class Lianmeng {
 
     @Field
-    private String lmId;
+    private String lmId;//联盟id
     @Field
-    private String lmmc;
+    private String lmmc;//联盟名称
     @Field
     private Integer lmdj = 1;//联盟等级
     @Field
@@ -31,29 +31,11 @@ public class Lianmeng {
     @Field
     private Integer lmsjsx = 0;//联盟升级所需
     @Field
-    private Integer mcldj = 0;//木产量等级
+    private Integer zyscdj = 0;//资源生产等级
     @Field
-    private Integer mcljy = 0;//木产量经验
+    private Integer zyscjy = 0;//资源生产经验
     @Field
-    private Integer mclsjsx = 0;//木产量升级所需
-    @Field
-    private Integer scldj = 0;//石产量等级
-    @Field
-    private Integer scljy = 0;//石产量经验
-    @Field
-    private Integer sclsjsx = 0;//石产量升级所需
-    @Field
-    private Integer tcldj = 0;//铁产量等级
-    @Field
-    private Integer tcljy = 0;//铁产量经验
-    @Field
-    private Integer tclsjsx = 0;//铁石产量升级所需
-    @Field
-    private Integer lcldj = 0;//粮产量等级
-    @Field
-    private Integer lcljy = 0;//粮产量经验
-    @Field
-    private Integer lclsjsx = 0;//粮产量升级所需
+    private Integer zyscsjsx = 0;//资源生产升级所需
     @Field
     private Integer bdgjdj = 0;//部队攻击等级
     @Field
@@ -72,6 +54,11 @@ public class Lianmeng {
     private Integer bdsdjy = 0;//部队速度经验
     @Field
     private Integer bdsdsjsx = 0;//部队速度升级所需
-
+    @Field
+    private Integer zbsddj = 0;//招兵速度等级
+    @Field
+    private Integer zbsdjy = 0;//招兵速度经验
+    @Field
+    private Integer zbsdsjsx = 0;//招兵速度升级所需
 
 }

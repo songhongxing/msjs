@@ -1,7 +1,9 @@
 package com.yuxi.msjs.controller;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.map.MapUtil;
 import com.yuxi.msjs.bean.entity.HomeUp;
+import com.yuxi.msjs.bean.entity.Lianmeng;
 import com.yuxi.msjs.bean.entity.UserCity;
 import com.yuxi.msjs.bean.vo.LianmengList;
 import com.yuxi.msjs.bean.vo.Lmcy;
@@ -64,6 +66,12 @@ public class LianmengController extends BaseController{
     public HjArray lmlb(){
         List<LianmengList> lmlb = lianmengService.lmlb();
         return arrayUtil.toArray(lmlb, lmlb.size(), LianmengList.class);
+    }
+
+    @GetMapping("/info")
+    public HjDict info(String lmId){
+        Lianmeng info = lianmengService.info(lmId);
+        return arrayUtil.toDict(BeanUtil.beanToMap(info));
     }
 
 }

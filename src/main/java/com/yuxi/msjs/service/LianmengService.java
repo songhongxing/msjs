@@ -95,4 +95,9 @@ public class LianmengService {
         }
         return result;
     }
+
+    public Lianmeng info(String lmId) {
+        Query lm = new Query(Criteria.where("lmId").is(lmId));
+        return mongoTemplate.findOne(lm, Lianmeng.class);
+    }
 }
