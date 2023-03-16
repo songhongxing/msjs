@@ -74,4 +74,18 @@ public class LianmengController extends BaseController{
         return arrayUtil.toDict(BeanUtil.beanToMap(info));
     }
 
+    /**
+     * 捐献俘虏,返回联盟信息
+     * @param lmId
+     * @param userId
+     * @param jxlx
+     * @param jxsl
+     * @return
+     */
+    @GetMapping("/jxfl")
+    public HjDict jxfl(String lmId, String userId, String jxlx, Integer jxsl){
+        Lianmeng jxfl = lianmengService.jxfl(lmId, userId, jxlx, jxsl);
+        return arrayUtil.toDict(BeanUtil.beanToMap(jxfl));
+    }
+
 }

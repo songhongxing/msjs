@@ -55,4 +55,8 @@ public class SlgMap {
      */
     @Field
     private Long mzdq = 0L;
+    @Field
+    private String lmId="";//联盟id
+    @Field
+    private String lmmc="";//联盟名称
 }

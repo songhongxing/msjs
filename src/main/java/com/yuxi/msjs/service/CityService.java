@@ -71,22 +71,11 @@ public class CityService {
      * @author songhongxing
      * @date 2023/02/27 10:42 上午
      */
-    public List<CityList> userCitys(String userId){
+    public List<UserCity> userCitys(String userId){
         List<CityList> cityList = new ArrayList<>();
         Query query = new Query();
         query.addCriteria(Criteria.where("userId").is(userId));
-        List<UserCity> userCities = mongoTemplate.find(query, UserCity.class);
-        CityList city;
-        for(UserCity userCity : userCities){
-            city = new CityList();
-            city.setCityId(userCity.getCityId());
-            city.setCityName(userCity.getCityName());
-            city.setZgm(userCity.getZgm());
-            city.setZbl(userCity.getZbl());
-            city.setZuobiao(userCity.getZuobiao());
-            cityList.add(city);
-        }
-        return cityList;
+        return  mongoTemplate.find(query, UserCity.class);
     }
 
     /**

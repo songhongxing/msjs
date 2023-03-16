@@ -61,8 +61,9 @@ public class UserController extends BaseController{
      */
     @GetMapping("/citys")
     public HjArray userCitys(String userId){
-        List<CityList> cityLists = cityService.userCitys(userId);
-        return arrayUtil.toArray(cityLists, cityLists.size(),CityList.class);
+        List<UserCity> cityLists = cityService.userCitys(userId);
+        return arrayUtil.toArray(cityLists, cityLists.size(),UserCity.class);
     }
+
 
 }
