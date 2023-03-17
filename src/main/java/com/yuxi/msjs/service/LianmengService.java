@@ -258,15 +258,14 @@ public class LianmengService {
      */
     public List<User> sqsp(String lmId, String userId, Integer type) {
         Query query = new Query(Criteria.where("lmId").is(lmId).and("userId").is(userId));
-        LianmShenq one = mongoTemplate.findOne(query, LianmShenq.class);
-        if(type == 1){
-            Query userQuery = new Query(Criteria.where("userId").is(lmId));
+        Query userQuery = new Query(Criteria.where("userId").is(userId));
+        User user = mongoTemplate.findOne(userQuery, User.class);
+        if(type == 1 && user.getLmId().equals("0")){
             Update update = new Update();
             update.set("lmId", lmId);
             mongoTemplate.updateFirst(userQuery, update, User.class);
         }
         mongoTemplate.remove(query, LianmShenq.class);
-        query = new Query(Criteria.where("lmId").is(lmId));
         return lmsq(lmId);
     }
 
