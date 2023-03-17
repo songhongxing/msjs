@@ -13,41 +13,41 @@ public class User {
 
     @Field
     @Indexed
-    private String userId;//用户id
+    private String userId;//用户id0
     @Field
-    private String name;//名称
+    private String name;//名称 1
     @Field
-    private String zcId;//主城id
+    private String zcId;//主城id 2
     @Field
-    private Integer cssl = 1;//城市数量
+    private Integer cssl = 1;//城市数量 3
     @Field
-    private Integer hj = 0;//黄金
+    private Integer hj = 0;//黄金 4
     @Field
-    private Integer tq = 0;//铜钱
+    private Integer tq = 0;//铜钱 5
     @Field
-    private String lmId = "0";//联盟id
+    private String lmId = "0";//联盟id 6
     @Field
-    private Integer lmgz = 0;//联盟官职 0成员,1副盟主,2盟主
+    private Integer lmgz = 0;//联盟官职 0成员,1副盟主,2盟主 7
     @Field
-    private String lmgzZw = "成员";//联盟官职 0成员,1副盟主,2盟主
+    private String lmgzZw = "成员";//联盟官职 0成员,1副盟主,2盟主 8
     @Field
-    private Integer lmgx = 0;//联盟贡献
+    private Integer lmgx = 0;//联盟贡献 9
     @Field
-    private String dlsj;//登录时间
+    private String dlsj;//登录时间 10
 
-    private Long sjhms;//时间毫秒数
+    private Long sjhms;//时间毫秒数 11
     @Field
-    private Integer ggcs = 0;//广告经验
+    private Integer ggcs = 0;//广告经验 12
     @Field
-    private Integer flsl = 0;//俘虏数量
+    private Integer flsl = 0;//俘虏数量 13
     @Field
-    private Double zyjc = 0D;//资源加成
+    private Double zyjc = 0D;//资源加成 14
     @Field
-    private Integer mgg = 0;//是否免广告
+    private Integer mgg = 0;//是否免广告 15
     @Field
-    private String junxian = "五等校尉";
+    private String junxian = "五等校尉"; //16
     @Field
-    private Integer jungong = 0;//军工
+    private Integer jungong = 0;//军工 17
 
 
 

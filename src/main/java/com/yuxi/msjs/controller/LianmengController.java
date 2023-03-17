@@ -4,6 +4,7 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.map.MapUtil;
 import com.yuxi.msjs.bean.entity.HomeUp;
 import com.yuxi.msjs.bean.entity.Lianmeng;
+import com.yuxi.msjs.bean.entity.User;
 import com.yuxi.msjs.bean.entity.UserCity;
 import com.yuxi.msjs.bean.vo.LianmengList;
 import com.yuxi.msjs.bean.vo.Lmcy;
@@ -86,6 +87,29 @@ public class LianmengController extends BaseController{
     public HjDict jxfl(String lmId, String userId, String jxlx, Integer jxsl){
         Lianmeng jxfl = lianmengService.jxfl(lmId, userId, jxlx, jxsl);
         return arrayUtil.toDict(BeanUtil.beanToMap(jxfl));
+    }
+
+    @GetMapping("/lmgg")
+    public HjDict fbgg(String lmId, String userId, String lmgg){
+        Lianmeng lianmeng = lianmengService.fbgg(lmId, userId, lmgg);
+        return arrayUtil.toDict(BeanUtil.beanToMap(lianmeng));
+    }
+
+    @GetMapping("/jrlm")
+    public void jrlm(String lmId, String userId){
+        lianmengService.jrlm(lmId, userId);
+    }
+
+    @GetMapping("/lmsq")
+    public HjArray lmsq(String lmId){
+        List<User> lmsq = lianmengService.lmsq(lmId);
+        return arrayUtil.toArray(lmsq, lmsq.size(), User.class);
+    }
+
+    @GetMapping("/spsq")
+    public HjArray spsq(String lmId,String userId, Integer type){
+        List<User> sqsp = lianmengService.sqsp(lmId, userId, type);
+        return arrayUtil.toArray(sqsp, sqsp.size(), User.class);
     }
 
 }

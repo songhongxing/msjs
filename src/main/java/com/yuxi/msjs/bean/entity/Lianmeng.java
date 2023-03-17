@@ -19,7 +19,7 @@ public class Lianmeng {
     @Field
     private String lmmc;//联盟名称
     @Field
-    private Integer lmdj = 1;//联盟等级
+    private Integer lmdj = 0;//联盟等级
     @Field
     private String lmgg = "";//联盟公告
     @Field
