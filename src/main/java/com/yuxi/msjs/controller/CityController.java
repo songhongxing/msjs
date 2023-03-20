@@ -1,7 +1,11 @@
 package com.yuxi.msjs.controller;
 
 import cn.hutool.core.bean.BeanUtil;
-import com.yuxi.msjs.bean.entity.*;
+import com.yuxi.msjs.bean.entity.HomeUp;
+import com.yuxi.msjs.bean.entity.Meinv;
+import com.yuxi.msjs.bean.entity.UserCity;
+import com.yuxi.msjs.bean.entity.Wujiang;
+import com.yuxi.msjs.bean.entity.ZhengBing;
 import com.yuxi.msjs.service.CityService;
 import com.yuxi.msjs.util.HjArray;
 import com.yuxi.msjs.util.HjDict;
@@ -116,10 +120,27 @@ public class CityController extends BaseController{
     }
 
     @GetMapping("/wjfz")
-    public HjArray zjjyz(String cityId, String wjId){
+    public HjArray zjjyz(String cityId, String wjId) {
         List<Wujiang> wjjy = cityService.wjfz(cityId, wjId);
         return arrayUtil.toArray(wjjy, wjjy.size(), Wujiang.class);
     }
 
+    /**
+     * 资源转换
+     */
+    @GetMapping("/zyzh")
+    public HjDict zyzh(String cityId, String lyzy, Integer lysl, String mbzy, Integer mbsl) {
+        UserCity zyzh = cityService.zyzh(cityId, lyzy, lysl, mbzy, mbsl);
+        return arrayUtil.toDict(BeanUtil.beanToMap(zyzh));
+    }
+
+    /**
+     * 资源运输
+     */
+    @GetMapping("/zyys")
+    public HjDict zyzh(String lyCityId, String lyzy, Integer lysl, String mbCityId, String mbzy, Integer mbsl) {
+        UserCity zyzh = cityService.zyys(lyCityId, lyzy, lysl, mbCityId, mbzy, mbsl);
+        return arrayUtil.toDict(BeanUtil.beanToMap(zyzh));
+    }
 
 }

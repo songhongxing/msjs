@@ -556,6 +556,103 @@ public class CityService {
         return mongoTemplate.find(query, Wujiang.class);
     }
 
+    /**
+     * 资源转换
+     *
+     * @param cityId
+     * @param lyzy
+     * @param lysl
+     * @param mbzy
+     * @param mbsl
+     * @author songhongxing
+     * @date 2023/03/20 3:12 下午
+     */
+    public UserCity zyzh(String cityId, String lyzy, Integer lysl, String mbzy, Integer mbsl) {
+        Query query = new Query(Criteria.where("cityId").is(cityId));
+        UserCity userCity = mongoTemplate.findOne(query, UserCity.class);
+        Update update = new Update();
+        if ("木".equals(lyzy) && lysl < userCity.getMucc()) {
+            update.set("mucc", userCity.getMucc() - lysl);
+            setZy(update, userCity, mbzy, mbsl);
+        } else if ("石".equals(lyzy) && lysl < userCity.getShicc()) {
+            update.set("shicc", userCity.getShicc() - lysl);
+            setZy(update, userCity, mbzy, mbsl);
+        } else if ("铁".equals(lyzy) && lysl < userCity.getTiecc()) {
+            update.set("tiecc", userCity.getTiecc() - lysl);
+            setZy(update, userCity, mbzy, mbsl);
+        } else if ("粮".equals(lyzy) && lysl < userCity.getLiangcc()) {
+            update.set("liangcc", userCity.getLiangcc() - lysl);
+            setZy(update, userCity, mbzy, mbsl);
+        }
+        mongoTemplate.updateFirst(query, update, UserCity.class);
+        return mongoTemplate.findOne(query, UserCity.class);
+    }
+
+    /**
+     * 分城运输资源
+     *
+     * @param lycityId
+     * @param lyzy
+     * @param lysl
+     * @param mbcityId
+     * @param mbzy
+     * @param mbsl
+     * @author songhongxing
+     * @date 2023/03/20 4:16 下午
+     */
+    public UserCity zyys(String lycityId, String lyzy, Integer lysl, String mbcityId, String mbzy, Integer mbsl) {
+        Query query = new Query(Criteria.where("cityId").is(lycityId));
+        UserCity userCity = mongoTemplate.findOne(query, UserCity.class);
+        Query mbQuery = new Query(Criteria.where("cityId").is(mbcityId));
+        Update lyupdate = new Update();
+        Update mbudate = new Update();
+        UserCity mbCity = new UserCity();
+        if ("木".equals(lyzy) && lysl < userCity.getMucc()) {
+            lyupdate.set("mucc", userCity.getMucc() - lysl);
+            mbCity = mongoTemplate.findOne(mbQuery, UserCity.class);
+        } else if ("石".equals(lyzy) && lysl < userCity.getShicc()) {
+            lyupdate.set("shicc", userCity.getShicc() - lysl);
+            mbCity = mongoTemplate.findOne(mbQuery, UserCity.class);
+        } else if ("铁".equals(lyzy) && lysl < userCity.getTiecc()) {
+            lyupdate.set("tiecc", userCity.getTiecc() - lysl);
+            mbCity = mongoTemplate.findOne(mbQuery, UserCity.class);
+        } else if ("粮".equals(lyzy) && lysl < userCity.getLiangcc()) {
+            lyupdate.set("liangcc", userCity.getLiangcc() - lysl);
+            mbCity = mongoTemplate.findOne(mbQuery, UserCity.class);
+        }
+        mongoTemplate.updateFirst(query, lyupdate, UserCity.class);
+        mbudate = getUpdate(mbCity, mbzy, mbsl);
+        mongoTemplate.updateFirst(mbQuery, mbudate, UserCity.class);
+        return mongoTemplate.findOne(query, UserCity.class);
+
+    }
+
+    private void setZy(Update update, UserCity userCity, String mbzy, Integer mbsl) {
+        if ("木".equals(mbzy)) {
+            update.set("mucc", userCity.getMucc() + mbsl);
+        } else if ("石".equals(mbzy)) {
+            update.set("shicc", userCity.getShicc() + mbsl);
+        } else if ("铁".equals(mbzy)) {
+            update.set("tiecc", userCity.getTiecc() + mbsl);
+        } else if ("粮".equals(mbzy)) {
+            update.set("liangcc", userCity.getLiangcc() + mbsl);
+        }
+    }
+
+    private Update getUpdate(UserCity userCity, String mbzy, Integer mbsl) {
+        Update update = new Update();
+        if ("木".equals(mbzy)) {
+            update.set("mucc", userCity.getMucc() + mbsl);
+        } else if ("石".equals(mbzy)) {
+            update.set("shicc", userCity.getShicc() + mbsl);
+        } else if ("铁".equals(mbzy)) {
+            update.set("tiecc", userCity.getTiecc() + mbsl);
+        } else if ("粮".equals(mbzy)) {
+            update.set("liangcc", userCity.getLiangcc() + mbsl);
+        }
+        return update;
+    }
+
 //    public static void main(String[] args) {
 //        Integer dj = 0;//当前等级
 //        Integer jy = 0;
