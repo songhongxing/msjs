@@ -117,7 +117,8 @@ public class ZiyuanTask {
                 //当前时间大于征兵结束时间后,把这个兵力加到城市中
                 update = new Update();
                 String zd = Bingzhong.getKeyByValue(zhengBing.getBz());
-                update.set(zd, getSl(userCity, zd)+zhengBing.getSl());
+                int zbsl = getSl(userCity, zd) + zhengBing.getSl();
+                update.set(zd, zbsl);
                 mongoTemplate.updateFirst(query, update, "user_city");
                 query.addCriteria(Criteria.where("bz").is(zhengBing.getBz()));
                 mongoTemplate.remove(query,"zhengbing");
@@ -139,6 +140,12 @@ public class ZiyuanTask {
 
         }
 
+
+    }
+
+
+    @Scheduled(cron = "0 0/1 * * * ?")
+    public void zongbingli() {
         //计算城市总兵力
         List<UserCity> cityList = mongoTemplate.findAll(UserCity.class);
         Query bingliQuery;
@@ -147,7 +154,9 @@ public class ZiyuanTask {
             for(UserCity city : cityList){
                 bingliQuery = new Query(Criteria.where("cityId").is(city.getCityId()));
                 int zbl = city.getBb()+city.getQb()+city.getNb()+city.getQq()+city.getHq()+city.getZq()+city.getCh()+city.getGb()+city.getCc()+city.getTsc();
+                int zgm = city.getNzt()+city.getTqt()+city.getJg()+city.getJs()+city.getBy()+city.getCk()+city.getLc()+city.getAc()+city.getCq()+city.getLc()+city.getShikuang()+city.getTiekuang()+city.getNongtian();
                 bingliUpdate.set("zbl", zbl);
+                bingliUpdate.set("zgm", zgm);
                 mongoTemplate.updateFirst(bingliQuery, bingliUpdate, "user_city");
             }
         }
