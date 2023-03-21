@@ -61,4 +61,18 @@ public class DaojuController extends BaseController {
         return arrayUtil.toDict(djsl);
     }
 
+    /**
+     * 使用道具
+     * @param userId
+     * @param name
+     * @return
+     */
+    @GetMapping("/use")
+    public HjDict usedj(String userId, String name, Integer sl) {
+        daojuService.djsy(userId, name, sl);
+        Map<String, Object> djsl = daojuService.djsl(userId);
+        return arrayUtil.toDict(djsl);
+    }
+
+
 }
