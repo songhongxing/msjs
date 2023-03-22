@@ -49,16 +49,16 @@ public class ZiyuanTask {
             query = new Query();
             query.addCriteria(Criteria.where("cityId").is(userCity.getCityId()));
             if (userCity.getMucc() < userCity.getCkcc()) {
-                userCity.setMucc(Integer.valueOf(userCity.getMucl() / 30) + userCity.getMucc());
+                userCity.setMucc(Integer.valueOf(userCity.getMucl() / 30) + userCity.getMucc() + userCity.getMujccl());
             }
             if (userCity.getShicc() < userCity.getCkcc()) {
-                userCity.setShicc(Integer.valueOf(userCity.getShicl() / 30) + userCity.getShicc());
+                userCity.setShicc(Integer.valueOf(userCity.getShicl() / 30) + userCity.getShicc() + userCity.getShijccl());
             }
             if (userCity.getTiecc() < userCity.getCkcc()) {
-                userCity.setTiecc(Integer.valueOf(userCity.getTiecl() / 30) + userCity.getTiecc());
+                userCity.setTiecc(Integer.valueOf(userCity.getTiecl() / 30) + userCity.getTiecc() + userCity.getTiejccl());
             }
             if (userCity.getLiangcc() < userCity.getLccc()) {
-                userCity.setLiangcc(Integer.valueOf(userCity.getLiangcl() / 30) + userCity.getLiangcc());
+                userCity.setLiangcc(Integer.valueOf(userCity.getLiangcl() / 30) + userCity.getLiangcc() + userCity.getLiangjccl());
             }
             update = new Update();
             update.set("mucc", userCity.getMucc());
@@ -129,9 +129,9 @@ public class ZiyuanTask {
                 mongoTemplate.updateFirst(query, update, "user_city");
             } else {
                 //计算征兵了多久
-                int zbhf = (int)DateUtil.currentSeconds() - zhengBing.getKssj();
-                //计算挣了几个兵
-                int yzm = zbhf / zhengBing.getDghs();
+                int zbhf = (int) DateUtil.currentSeconds() - zhengBing.getKssj();
+                //计算征了几个
+                int yzm = (int) (zbhf / zhengBing.getDghs());
                 query = new Query(Criteria.where("cityId").is(zhengBing.getCityId()).and("bz").is(zhengBing.getBz()));
                 update = new Update();
                 update.set("yzm", yzm);

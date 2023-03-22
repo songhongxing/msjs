@@ -92,5 +92,23 @@ public class UserCity {
     private Integer zgm = 0;//总规模 39
     @Field
     private Integer acrl = 0;//暗仓容量 40
+    @Field
+    private Double mujc = 0.0;//木产量加成 41
+    @Field
+    private Double shijc = 0.0;//石产量加成 42
+    @Field
+    private Double tiejc = 0.0;//铁产量加成 43
+    @Field
+    private Double liangjc = 0.0;//粮产量加成 44
+    @Field
+    private Double zbjc = 0.0;//招兵加成 45
+    @Field
+    private Integer mujccl = 0;//木加成产量 46
+    @Field
+    private Integer shijccl = 0;//石加成产量 47
+    @Field
+    private Integer tiejccl = 0;//铁加成产量 48
+    @Field
+    private Integer liangjccl = 0;//粮加成产量 49
 
 }

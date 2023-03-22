@@ -350,6 +350,7 @@ public class CityService {
 
     /**
      * 征兵队列
+     *
      * @param cityId
      * @param bz
      * @param sl
@@ -357,20 +358,23 @@ public class CityService {
      * @author songhongxing
      * @date 2023/03/02 3:53 下午
      */
-    public List<ZhengBing> zhengbing(String cityId, String bz, Integer sl, Integer dghs) {
+    public List<ZhengBing> zhengbing(String cityId, String bz, Integer sl, Double dghs) {
+        Query query = new Query(Criteria.where("cityId").is(cityId));
+        //扣除城市资源
+        UserCity userCity = mongoTemplate.findOne(query, UserCity.class);
         ZhengBing zhengBing = new ZhengBing();
         zhengBing.setCityId(cityId);
         zhengBing.setBz(bz);
         zhengBing.setSl(sl);
         zhengBing.setYzm(0);
+//        dghs = (int) (dghs * 1 - userCity.getZbjc());
         zhengBing.setDghs(dghs);
-        zhengBing.setZhs(dghs*sl);
-        zhengBing.setKssj((int)DateUtil.currentSeconds());
-        zhengBing.setJssj(zhengBing.getKssj() +zhengBing.getZhs());
+        zhengBing.setZhs((int) (dghs * sl));
+        zhengBing.setKssj((int) DateUtil.currentSeconds());
+        zhengBing.setJssj(zhengBing.getKssj() + zhengBing.getZhs());
         mongoTemplate.save(zhengBing);
-        Query query = new Query(Criteria.where("cityId").is(cityId));
-        //扣除城市资源
-        UserCity userCity = mongoTemplate.findOne(query, UserCity.class);
+
+
         Update update = new Update();
         update.set("mucc", userCity.getMucc() - Bzzy.getMuz(bz) * sl);
         update.set("shicc", userCity.getShicc() - Bzzy.getShiz(bz) * sl);
@@ -453,6 +457,40 @@ public class CityService {
             update.set("ml", meinv.getMl() + sxd);
         }
         mongoTemplate.updateFirst(query, update, "meinv");
+        Query cityQuery = new Query(Criteria.where("cityId").is(cityId));
+        UserCity city = mongoTemplate.findOne(cityQuery, UserCity.class);
+        mongoTemplate.updateFirst(query, update, Meinv.class);
+        Update cityUpdate = new Update();
+        if (meinv.getGz().equals("林务官")) {
+            city.setMujc(city.getMujc() + meinv.getLy() / 100D);
+            city.setMujccl((int) (city.getMucl() * city.getMujc()));
+            city.setMucl(city.getMucl() + city.getMujccl());
+            cityUpdate.set("mujc", city.getMujc());
+            cityUpdate.set("mujccl", city.getMujccl());
+        } else if (meinv.getGz().equals("石务官")) {
+            city.setShijc(city.getShijc() + meinv.getSc() / 100D);
+            city.setShijccl((int) (city.getShicl() * city.getShijc()));
+            city.setShicl(city.getShicl() + city.getShijccl());
+            cityUpdate.set("shijc", city.getShijc());
+            cityUpdate.set("shijccl", city.getShijccl());
+        } else if (meinv.getGz().equals("铁务官")) {
+            city.setTiejc(city.getTiejc() + meinv.getZl() / 100D);
+            city.setTiejccl((int) (city.getTiecl() * city.getTiejc()));
+            city.setTiecl(city.getTiecl() + city.getTiejccl());
+            cityUpdate.set("tiejc", city.getTiejc());
+            cityUpdate.set("tiejccl", city.getTiejccl());
+        } else if (meinv.getGz().equals("粮务官")) {
+            city.setLiangjc(city.getLiangjc() + meinv.getCy() / 100D);
+            city.setLiangjccl((int) (city.getLiangcl() * city.getLiangjc()));
+            city.setLiangcl(city.getLiangcl() + city.getLiangjccl());
+            cityUpdate.set("liangjc", city.getLiangjc());
+            cityUpdate.set("liangjccl", city.getLiangjccl());
+        } else if (meinv.getGz().equals("军务官")) {
+            city.setZbjc(city.getZbjc() + meinv.getMl() / 100D);
+            cityUpdate.set("zbjc", city.getZbjc());
+        }
+        mongoTemplate.updateFirst(cityQuery, cityUpdate, UserCity.class);
+
         //扣减道具数量
         daojuService.djsy(userId, "玉女心经", sxd);
         Query lbQuery = new Query(Criteria.where("cityId").is(cityId));
@@ -651,6 +689,104 @@ public class CityService {
             update.set("liangcc", userCity.getLiangcc() + mbsl);
         }
         return update;
+    }
+
+    /**
+     * 任命官职
+     *
+     * @param cityId
+     * @param name
+     * @param gz
+     * @return
+     */
+    public List<Meinv> rmmv(String cityId, String name, String gz) {
+        Query query = new Query(Criteria.where("cityId").is(cityId).and("name").is(name));
+        Meinv meinv = mongoTemplate.findOne(query, Meinv.class);
+        Query cityQuery = new Query(Criteria.where("cityId").is(cityId));
+        UserCity city = mongoTemplate.findOne(cityQuery, UserCity.class);
+        Update update = new Update();
+        update.set("gz", gz);
+        mongoTemplate.updateFirst(query, update, Meinv.class);
+        Update cityUpdate = new Update();
+        if (gz.equals("林务官")) {
+            city.setMujc(city.getMujc() + meinv.getLy() / 100D);
+            city.setMujccl((int) (city.getMucl() * city.getMujc()));
+            cityUpdate.set("mujc", city.getMujc());
+            cityUpdate.set("mujccl", city.getMujccl());
+        } else if (gz.equals("石务官")) {
+            city.setShijc(city.getShijc() + meinv.getSc() / 100D);
+            city.setShijccl((int) (city.getShicl() * city.getShijc()));
+            city.setShicl(city.getShicl() + city.getShijccl());
+            cityUpdate.set("shijc", city.getShijc());
+            cityUpdate.set("shijccl", city.getShijccl());
+        } else if (gz.equals("铁务官")) {
+            city.setTiejc(city.getTiejc() + meinv.getZl() / 100D);
+            city.setTiejccl((int) (city.getTiecl() * city.getTiejc()));
+            city.setTiecl(city.getTiecl() + city.getTiejccl());
+            cityUpdate.set("tiejc", city.getTiejc());
+            cityUpdate.set("tiejccl", city.getTiejccl());
+        } else if (gz.equals("粮务官")) {
+            city.setLiangjc(city.getLiangjc() + meinv.getCy() / 100D);
+            city.setLiangjccl((int) (city.getLiangcl() * city.getLiangjc()));
+            city.setLiangcl(city.getLiangcl() + city.getLiangjccl());
+            cityUpdate.set("liangjc", city.getLiangjc());
+            cityUpdate.set("liangjccl", city.getLiangjccl());
+        } else if (gz.equals("军务官")) {
+            city.setZbjc(city.getZbjc() + meinv.getMl() / 100D);
+            cityUpdate.set("zbjc", city.getZbjc());
+        }
+        mongoTemplate.updateFirst(cityQuery, cityUpdate, UserCity.class);
+        query = new Query(Criteria.where("cityId").is(cityId));
+        return mongoTemplate.find(query, Meinv.class);
+    }
+
+    /**
+     * 解除美女
+     *
+     * @param cityId
+     * @param name
+     * @param gz
+     * @return
+     */
+    public List<Meinv> jiechumv(String cityId, String name) {
+        Query query = new Query(Criteria.where("cityId").is(cityId).and("name").is(name));
+        Meinv meinv = mongoTemplate.findOne(query, Meinv.class);
+        Query cityQuery = new Query(Criteria.where("cityId").is(cityId));
+        UserCity city = mongoTemplate.findOne(cityQuery, UserCity.class);
+        Update update = new Update();
+        update.set("gz", "");
+        mongoTemplate.updateFirst(query, update, Meinv.class);
+        Update cityUpdate = new Update();
+        if (meinv.getGz().equals("林务官")) {
+            city.setMujc(city.getMujc() - meinv.getLy() / 100D);
+            city.setMujccl((int) (city.getMucl() * city.getMujc()));
+            city.setMucl(city.getMucl() - city.getMujccl());
+            cityUpdate.set("mujc", city.getMujc());
+            cityUpdate.set("mujccl", city.getMujccl());
+        } else if (meinv.getGz().equals("石务官")) {
+            city.setShijc(city.getShijc() - meinv.getSc() / 100D);
+            city.setShijccl((int) (city.getShicl() * city.getShijc()));
+            city.setShicl(city.getShicl() + city.getShijccl());
+            cityUpdate.set("shijc", city.getShijc());
+            cityUpdate.set("shijccl", city.getShijccl());
+        } else if (meinv.getGz().equals("铁务官")) {
+            city.setTiejc(city.getTiejc() - meinv.getZl() / 100D);
+            city.setTiejccl((int) (city.getTiecl() * city.getTiejc()));
+            cityUpdate.set("tiejc", city.getTiejc());
+            cityUpdate.set("tiejccl", city.getTiejccl());
+        } else if (meinv.getGz().equals("粮务官")) {
+            city.setLiangjc(city.getLiangjc() - meinv.getCy() / 100D);
+            city.setLiangjccl((int) (city.getLiangcl() * city.getLiangjc()));
+            cityUpdate.set("liangjc", city.getLiangjc());
+            cityUpdate.set("liangjccl", city.getLiangjccl());
+            cityUpdate.set("liangcl", city.getLiangcl());
+        } else if (meinv.getGz().equals("军务官")) {
+            city.setZbjc(city.getZbjc() - meinv.getMl() / 100D);
+            cityUpdate.set("zbjc", city.getZbjc());
+        }
+        mongoTemplate.updateFirst(cityQuery, cityUpdate, UserCity.class);
+        query = new Query(Criteria.where("cityId").is(cityId));
+        return mongoTemplate.find(query, Meinv.class);
     }
 
 //    public static void main(String[] args) {

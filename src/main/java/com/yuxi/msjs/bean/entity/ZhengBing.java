@@ -23,7 +23,7 @@ public class ZhengBing {
     @Field
     private Integer yzm;//已招募数量
     @Field
-    private Integer dghs;//单个耗时
+    private Double dghs;//单个耗时
     @Field
     private Integer zhs;//总耗时
     @Field
