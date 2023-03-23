@@ -13,50 +13,50 @@ import org.springframework.data.mongodb.core.mapping.Field;
 public class SlgMap {
 
     @Field
-    private Integer id;
+    private Integer id;//0
 
     /**
      * 地块类型(村庄,农田,林场,石矿,铁矿,NPC城市,玩家城市)
      */
     @Field
-    private String dklx;
+    private String dklx;//1
     /**
      * 地块名称
      */
     @Field
-    private String dkmc;
+    private String dkmc;//2
     /**
      * 地块等级
      */
     @Field
-    private Integer dkdj;
+    private Integer dkdj;//3
     /**
      * 地块守军数量
      */
     @Field
-    private Integer dksj;
+    private Integer dksj;//4
     /**
      * 免战标志(0可攻打,1免战牌)
      */
     @Field
-    private Integer mzbz;
+    private Integer mzbz;//5
     /**
      * 所属玩家id
      */
     @Field
-    private String sswjId = "";
+    private String sswjId = "";//6
     /**
      * 所属玩家姓名
      */
     @Field
-    private String sswjName = "";
+    private String sswjName = "";//7
     /**
      * 免战到期
      */
     @Field
-    private Long mzdq = 0L;
+    private Long mzdq = 0L;//8
     @Field
-    private String lmId="";//联盟id
+    private String lmId="";//联盟id9
     @Field
-    private String lmmc="";//联盟名称
+    private String lmmc="无";//联盟名称10=
 }

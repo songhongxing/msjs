@@ -3,6 +3,7 @@ package com.yuxi.msjs.service;
 import cn.hutool.core.collection.CollUtil;
 import com.yuxi.msjs.bean.entity.LianmShenq;
 import com.yuxi.msjs.bean.entity.Lianmeng;
+import com.yuxi.msjs.bean.entity.SlgMap;
 import com.yuxi.msjs.bean.entity.User;
 import com.yuxi.msjs.bean.vo.LianmengList;
 import com.yuxi.msjs.bean.vo.Lmcy;
@@ -50,6 +51,8 @@ public class LianmengService {
         update.set("lmgz", 2);
         update.set("lmgzZw", "盟主");
         mongoTemplate.updateFirst(query, update, "user");
+        //修改地图上的玩家联盟
+        updateSlgMap(userId, lianmeng.getLmId());
         return lmcyList(lianmeng.getLmId());
     }
 
@@ -264,10 +267,22 @@ public class LianmengService {
             Update update = new Update();
             update.set("lmId", lmId);
             mongoTemplate.updateFirst(userQuery, update, User.class);
+            //修改地图上的玩家联盟
+            updateSlgMap(userId, lmId);
         }
         mongoTemplate.remove(query, LianmShenq.class);
         return lmsq(lmId);
     }
 
+    public void updateSlgMap(String userId, String lmId){
+        //修改地图上的玩家联盟
+        Query mapQuery = new Query(Criteria.where("sswjId").is(userId));
+        Query lmQuery = new Query(Criteria.where("lmId").is(lmId));
+        Lianmeng lianmeng = mongoTemplate.findOne(lmQuery, Lianmeng.class);
+        Update mapUpdate = new Update();
+        mapUpdate.set("lmId", lmId);
+        mapUpdate.set("lmmc", lianmeng.getLmmc());
+        mongoTemplate.updateFirst(mapQuery, mapUpdate, SlgMap.class);
+    }
 
 }

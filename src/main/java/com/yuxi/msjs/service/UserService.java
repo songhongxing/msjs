@@ -51,6 +51,8 @@ public class UserService {
         Update update = new Update();
         update.set("dklx", "玩家城池");
         update.set("dkmc", name);
+        update.set("sswjId", userId);
+        update.set("sswjName", name);
         UpdateResult updateResult = mongoTemplate.updateFirst(query, update,"slg_map");
         assert updateResult.wasAcknowledged();
         mongoTemplate.save(user);

@@ -25,7 +25,7 @@ public class User {
     @Field
     private Integer tq = 0;//铜钱 5
     @Field
-    private String lmId = "0";//联盟id 6
+    private String lmId = "无";//联盟id 6
     @Field
     private Integer lmgz = 0;//联盟官职 0成员,1副盟主,2盟主 7
     @Field
