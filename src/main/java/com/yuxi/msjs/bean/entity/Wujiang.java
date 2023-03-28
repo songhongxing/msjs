@@ -58,4 +58,12 @@ public class Wujiang {
     private Integer xj=0;//星级23;
     @Field
     private String wjId;//武将id 24
+    @Field
+    private String wqId;//武器id 25
+    @Field
+    private String fjId;//防具id 26
+    @Field
+    private String zqId;//坐骑id 27
+    @Field
+    private String spId;//饰品id 28
 }
