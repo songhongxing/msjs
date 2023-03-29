@@ -31,7 +31,7 @@ public class UserZb {
     @Field
     private Integer sd;//速度加成 7
     @Field
-    private Integer zm;//智谋加成 8
+    private Integer zl;//智谋加成 8
     @Field
     private String wjId;//武将id 9
     @Field

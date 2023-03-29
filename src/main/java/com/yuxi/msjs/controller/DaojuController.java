@@ -2,7 +2,9 @@ package com.yuxi.msjs.controller;
 
 import cn.hutool.json.JSONUtil;
 import com.yuxi.msjs.bean.entity.UserDaoju;
+import com.yuxi.msjs.bean.entity.UserZb;
 import com.yuxi.msjs.service.DaojuService;
+import com.yuxi.msjs.service.ZhuangbServicce;
 import com.yuxi.msjs.util.HjArray;
 import com.yuxi.msjs.util.HjDict;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +29,8 @@ public class DaojuController extends BaseController {
 
     @Autowired
     private DaojuService daojuService;
+    @Autowired
+    private ZhuangbServicce zhuangbServicce;
 
     /**
      * 添加道具
@@ -72,6 +76,47 @@ public class DaojuController extends BaseController {
         daojuService.djsy(userId, name, sl);
         Map<String, Object> djsl = daojuService.djsl(userId);
         return arrayUtil.toDict(djsl);
+    }
+
+    /**
+     * 添加武将装备
+     * @param userId
+     * @param cityId
+     * @param wjId
+     * @param zbId
+     * @return
+     */
+    @GetMapping("/tjwjzb")
+    public HjDict tjwjzb(String userId, String cityId, String wjId, String zbId){
+        Map<String, Object> tjwjzb = zhuangbServicce.tjwjzb(userId, cityId, wjId, zbId);
+        return arrayUtil.toDict(tjwjzb);
+    }
+
+    @GetMapping("/wjzblb")
+    public HjDict wjzblb(String userId, String cityId, String wjId){
+        Map<String, Object> wjzb = zhuangbServicce.wjzb(userId, cityId, wjId);
+        return arrayUtil.toDict(wjzb);
+    }
+
+    /**
+     * 获取装备
+     * @param userId
+     * @param name
+     */
+    @GetMapping("/hqzb")
+    public String hqzb(String userId,  String name){
+        List<UserZb> userZbs = zhuangbServicce.insert(userId, name);
+        return name;
+    }
+
+    /**
+     * 装备列表
+     * @param userId
+     */
+ @GetMapping("/zblb")
+    public HjArray zblb(String userId){
+        List<UserZb> userZbs = zhuangbServicce.find(userId);
+     return arrayUtil.toArray(userZbs, userZbs.size(), UserZb.class);
     }
 
 
