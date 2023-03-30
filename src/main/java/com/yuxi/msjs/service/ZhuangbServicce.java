@@ -45,6 +45,7 @@ public class ZhuangbServicce {
         userZb.setFy(Zhuangbei.getFyz(zbmc));
         userZb.setSd(Zhuangbei.getSdz(zbmc));
         userZb.setZl(Zhuangbei.getZlz(zbmc));
+        userZb.setPz(Zhuangbei.getZbpz(zbmc));
         mongoTemplate.save(userZb);
         Query query = new Query(Criteria.where("userId").is(userId));
         return mongoTemplate.find(query, UserZb.class);
@@ -52,29 +53,34 @@ public class ZhuangbServicce {
 
     /**
      * 个人装备列表
+     *
      * @param userId
      * @return
      */
-    public List<UserZb> find(String userId){
+    public List<UserZb> find(String userId, String zblx) {
         Query query = new Query(Criteria.where("userId").is(userId));
+        if (StrUtil.isNotEmpty(zblx)) {
+            query.addCriteria(Criteria.where("zblx").is(zblx).and("wjId").is("无"));
+        }
         return mongoTemplate.find(query, UserZb.class);
     }
 
     /**
      * 武将装备
+     *
      * @param userId
      * @param cityId
      * @param wjId
      * @return
      */
-    public Map<String, Object> wjzb(String userId, String cityId, String wjId){
+    public Map<String, Object> wjzb(String userId, String cityId, String wjId) {
         Query query = new Query(Criteria.where("userId").is(userId).and("cityId").is(cityId).and("wjId").is(wjId));
         Wujiang wujiang = mongoTemplate.findOne(query, Wujiang.class);
         Map<String, Object> result = new HashMap<>();
-        result.put("wq", wujiang.getWq());
-        result.put("fj", wujiang.getFj());
-        result.put("zq", wujiang.getZq());
-        result.put("sp", wujiang.getSp());
+        result.put("wq", wujiang.getWqId() + "|" + wujiang.getWq());
+        result.put("fj", wujiang.getFjId() + "|" + wujiang.getFj());
+        result.put("zq", wujiang.getZqId() + "|" + wujiang.getZq());
+        result.put("sp", wujiang.getSpId() + "|" + wujiang.getSp());
         return result;
     }
 
@@ -97,56 +103,71 @@ public class ZhuangbServicce {
         Update oldzbUpdate = new Update();//老装备更新
         if(userZb.getZblx().equals("武器")){
             //如果武将原来有装备,卸下原装备,新装备的武将id改成当前武将
-            if(StrUtil.isNotBlank(wujiang.getWq())){
+            if (!wujiang.getWq().equals("无")) {
                 oldzbQuery = new Query(Criteria.where("zbId").is(wujiang.getWqId()));
                 UserZb olduserZb = mongoTemplate.findOne(oldzbQuery, UserZb.class);//老装备
-                wjUpdate.set("wqId", userZb.getZbId());
-                wjUpdate.set("wq", userZb.getZbmc());
+                oldzbUpdate.set("wjId", "无");
+                oldzbUpdate.set("wjName", "无");
                 int wy = wujiang.getWl() - olduserZb.getWy() + userZb.getWy();
                 wjUpdate.set("wl", wy);
-                oldzbUpdate.set("wjId", "");
-                oldzbUpdate.set("wjName", "");
+                mongoTemplate.updateFirst(oldzbQuery, oldzbUpdate, UserZb.class);
+            } else {
+                int wy = wujiang.getWl() + userZb.getWy();
+                wjUpdate.set("wl", wy);
             }
-        } else if(userZb.getZblx().equals("防具")){
+            wjUpdate.set("wqId", userZb.getZbId());
+            wjUpdate.set("wq", userZb.getZbmc());
+        } else if (userZb.getZblx().equals("防具")) {
             //如果武将原来有装备,卸下原装备,新装备的武将id改成当前武将
-            if(StrUtil.isNotBlank(wujiang.getFj())){
+            if (!wujiang.getFj().equals("无")) {
                 oldzbQuery = new Query(Criteria.where("zbId").is(wujiang.getFjId()));
                 UserZb olduserZb = mongoTemplate.findOne(oldzbQuery, UserZb.class);//老装备
-                wjUpdate.set("fjId", userZb.getZbId());
-                wjUpdate.set("fj", userZb.getZbmc());
                 int fy = wujiang.getFy() - olduserZb.getFy() + userZb.getFy();
                 wjUpdate.set("fy", fy);
-                oldzbUpdate.set("wjId", "");
-                oldzbUpdate.set("wjName", "");
+                oldzbUpdate.set("wjId", "无");
+                oldzbUpdate.set("wjName", "无");
+                mongoTemplate.updateFirst(oldzbQuery, oldzbUpdate, UserZb.class);
+            } else {
+                int fy = wujiang.getFy() + userZb.getFy();
+                wjUpdate.set("fy", fy);
             }
-        } else if(userZb.getZblx().equals("坐骑")){
+            wjUpdate.set("fjId", userZb.getZbId());
+            wjUpdate.set("fj", userZb.getZbmc());
+        } else if (userZb.getZblx().equals("坐骑")) {
             //如果武将原来有装备,卸下原装备,新装备的武将id改成当前武将
-            if(StrUtil.isNotBlank(wujiang.getZq())){
+            if (!wujiang.getZq().equals("无")) {
                 oldzbQuery = new Query(Criteria.where("zbId").is(wujiang.getZqId()));
                 UserZb olduserZb = mongoTemplate.findOne(oldzbQuery, UserZb.class);//老装备
-                wjUpdate.set("zqId", userZb.getZbId());
-                wjUpdate.set("zq", userZb.getZbmc());
                 int sd = wujiang.getSd() - olduserZb.getSd() + userZb.getSd();
                 wjUpdate.set("sd", sd);
-                oldzbUpdate.set("wjId", "");
-                oldzbUpdate.set("wjName", "");
+                oldzbUpdate.set("wjId", "无");
+                oldzbUpdate.set("wjName", "无");
+                mongoTemplate.updateFirst(oldzbQuery, oldzbUpdate, UserZb.class);
+            } else {
+                int sd = wujiang.getSd() + userZb.getSd();
+                wjUpdate.set("sd", sd);
             }
+            wjUpdate.set("zqId", userZb.getZbId());
+            wjUpdate.set("zq", userZb.getZbmc());
         } else if(userZb.getZblx().equals("饰品")){
             //如果武将原来有装备,卸下原装备,新装备的武将id改成当前武将
-            if(StrUtil.isNotBlank(wujiang.getSp())){
+            if (!wujiang.getSp().equals("无")) {
                 oldzbQuery = new Query(Criteria.where("zbId").is(wujiang.getSpId()));
                 UserZb olduserZb = mongoTemplate.findOne(oldzbQuery, UserZb.class);//老装备
-                wjUpdate.set("zqId", userZb.getZbId());
-                wjUpdate.set("zq", userZb.getZbmc());
                 int zl = wujiang.getZl() - olduserZb.getZl() + userZb.getZl();
                 wjUpdate.set("sd", zl);
-                oldzbUpdate.set("wjId", "");
-                oldzbUpdate.set("wjName", "");
+                oldzbUpdate.set("wjId", "无");
+                oldzbUpdate.set("wjName", "无");
+                mongoTemplate.updateFirst(oldzbQuery, oldzbUpdate, UserZb.class);
+            } else {
+                int zl = wujiang.getZl() + userZb.getZl();
+                wjUpdate.set("sd", zl);
             }
+            wjUpdate.set("spId", userZb.getZbId());
+            wjUpdate.set("sp", userZb.getZbmc());
         }
         zbUpdate.set("wjId", wujiang.getWjId());
         zbUpdate.set("wjName", wujiang.getName());
-        mongoTemplate.updateFirst(oldzbQuery, oldzbUpdate, UserZb.class);
         mongoTemplate.updateFirst(zbQuery, zbUpdate, UserZb.class);
         mongoTemplate.updateFirst(wjQuery, wjUpdate, Wujiang.class);
         return wjzb(userId, cityId, wjId);

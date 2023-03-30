@@ -114,8 +114,8 @@ public class DaojuController extends BaseController {
      * @param userId
      */
  @GetMapping("/zblb")
-    public HjArray zblb(String userId){
-        List<UserZb> userZbs = zhuangbServicce.find(userId);
+    public HjArray zblb(String userId, String zblx){
+        List<UserZb> userZbs = zhuangbServicce.find(userId, zblx);
      return arrayUtil.toArray(userZbs, userZbs.size(), UserZb.class);
     }
 

@@ -103,6 +103,14 @@ public enum Zhuangbei {
         this.zl = zl;
     }
 
+    public String getPz() {
+        return pz;
+    }
+
+    public void setPz(String pz) {
+        this.pz = pz;
+    }
+
     public static String getLx(String zbmc) {
         for (Zhuangbei e : Zhuangbei.values()) {
             if(e.getZbmc().equals(zbmc)){
@@ -140,6 +148,14 @@ public enum Zhuangbei {
         for (Zhuangbei e : Zhuangbei.values()) {
             if(e.getZbmc().equals(zbmc)){
                 return e.getZl();
+            }
+        }
+        return null;
+    }
+    public static String getZbpz(String zbmc) {
+        for (Zhuangbei e : Zhuangbei.values()) {
+            if(e.getZbmc().equals(zbmc)){
+                return e.getPz();
             }
         }
         return null;

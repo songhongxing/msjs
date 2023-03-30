@@ -33,9 +33,12 @@ public class UserZb {
     @Field
     private Integer zl;//智谋加成 8
     @Field
-    private String wjId;//武将id 9
+    private String wjId = "无";//武将id 94
     @Field
-    private String wjName;//武将名称 10
+    private String wjName = "无";//武将名称 10
+    @Field
+    private String pz;//装备品质 11
+
 
 
 }

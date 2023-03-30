@@ -37,13 +37,13 @@ public class Wujiang {
     @Field
     private Integer zljd=0;//智力加点13
     @Field
-    private String wq="";//武器14
+    private String wq="无";//武器14
     @Field
-    private String fj="";//防具15
+    private String fj="无";//防具15
     @Field
-    private String zq="";//坐骑16
+    private String zq="无";//坐骑16
     @Field
-    private String sp="";//饰品17
+    private String sp="无";//饰品17
     @Field
     private String jn1="无";//技能118
     @Field
@@ -59,11 +59,11 @@ public class Wujiang {
     @Field
     private String wjId;//武将id 24
     @Field
-    private String wqId;//武器id 25
+    private String wqId="无";//武器id 25
     @Field
-    private String fjId;//防具id 26
+    private String fjId="无";//防具id 26
     @Field
-    private String zqId;//坐骑id 27
+    private String zqId="无";//坐骑id 27
     @Field
-    private String spId;//饰品id 28
+    private String spId="无";//饰品id 28
 }
