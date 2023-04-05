@@ -106,12 +106,13 @@ public class CityController extends BaseController{
 
     /**
      * 武将列表
+     *
      * @param cityId
      * @return
      */
     @GetMapping("/wjlb")
-    public HjArray wjlb(String cityId){
-        List<Wujiang> wjlb = cityService.wjlb(cityId);
+    public HjArray wjlb(String cityId, Integer czzt) {
+        List<Wujiang> wjlb = cityService.wjlb(cityId, czzt);
         return arrayUtil.toArray(wjlb, wjlb.size(), Wujiang.class);
     }
 

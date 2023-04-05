@@ -28,6 +28,7 @@ import com.yuxi.msjs.bean.entity.Wujiang;
 import com.yuxi.msjs.bean.entity.ZhengBing;
 import com.yuxi.msjs.bean.vo.CityList;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -411,8 +412,12 @@ public class CityService {
         return  mongoTemplate.find(query, Wujiang.class);
     }
 
-    public List<Wujiang> wjlb(String cityId){
+    public List<Wujiang> wjlb(String cityId, Integer czzt){
         Query query = new Query(Criteria.where("cityId").is(cityId));
+        if(czzt == 1){
+            query.addCriteria(Criteria.where("czzt").is(0));
+            query.with(Sort.by(Sort.Order.desc("wl")));
+        }
         return  mongoTemplate.find(query, Wujiang.class);
     }
 

@@ -59,4 +59,6 @@ public class SlgMap {
     private String lmId="";//联盟id9
     @Field
     private String lmmc="无";//联盟名称10=
+    @Field
+    private String cityId="";//城市id11
 }
