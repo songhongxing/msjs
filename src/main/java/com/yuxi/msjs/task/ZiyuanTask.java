@@ -4,6 +4,7 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
 import com.mongodb.bulk.BulkWriteResult;
 import com.yuxi.msjs.bean.conste.Bingzhong;
+import com.yuxi.msjs.bean.entity.Chuzheng;
 import com.yuxi.msjs.bean.entity.HomeUp;
 import com.yuxi.msjs.bean.entity.UserCity;
 import com.yuxi.msjs.bean.entity.ZhengBing;
@@ -20,6 +21,8 @@ import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * 更新城市资源
@@ -34,6 +37,7 @@ public class ZiyuanTask {
     private MongoTemplate mongoTemplate;
     @Autowired
     private CityService cityService;
+    private ExecutorService executorService = Executors.newCachedThreadPool();
 
     @Scheduled(cron = "0 0/2 * * * ?")
     public void task() {
@@ -194,5 +198,54 @@ public class ZiyuanTask {
                 return userCity.getGb();
         }
         return 0;
+    }
+
+    /**
+     * 处理战斗相关
+     */
+    @Scheduled(cron = "0/10 * * * * ?")
+    public void zhandou(){
+
+        Query jqQuery = new Query(Criteria.where("ddsj").lte(DateUtil.currentSeconds() / 1000));
+        List<Chuzheng> chuzhengs = mongoTemplate.find(jqQuery, Chuzheng.class);
+        if(CollUtil.isNotEmpty(chuzhengs)){
+            for(Chuzheng chuzheng : chuzhengs){
+                ZhanDouThread zhanDouThread = new ZhanDouThread(chuzheng.getCzId(), mongoTemplate);
+                executorService.execute(zhanDouThread);
+
+
+            }
+        }
+
+
+    }
+
+
+    /**
+     * 计算攻击方战斗力
+     *     计算防守方战斗力
+     *     根据不同的战斗方式生成不同的结果
+     *     生成战报
+     *     扣除攻击方,防守方的兵力,增援方如果有剩余的兵力,返回城市
+     *     刷新本次战斗所有参与城市的耗粮
+     *     获取俘虏总数,获取军功计算到个人信息
+     *     删除这条军情
+     */
+    public class ZhanDouThread implements Runnable{
+        private String czId;
+        private MongoTemplate mongoTemplate;
+
+        public ZhanDouThread(String czId, MongoTemplate mongoTemplate) {
+            this.czId = czId;
+            this.mongoTemplate = mongoTemplate;
+        }
+
+        @Override
+        public void run() {
+            Query query = new Query(Criteria.where("czId").is(this.czId));
+            Chuzheng chuzheng = mongoTemplate.findOne(query, Chuzheng.class);
+            //计算
+
+        }
     }
 }
