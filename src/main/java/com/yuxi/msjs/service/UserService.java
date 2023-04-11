@@ -45,16 +45,6 @@ public class UserService {
         user.setName(name);
         UserCity city = cityService.createCity(userId, name, zuobiao);
         user.setZcId(city.getCityId());
-
-        //修改地图类型为玩家城池
-        Query query = new Query(Criteria.where("_id").is(zuobiao));
-        Update update = new Update();
-        update.set("dklx", "玩家城池");
-        update.set("dkmc", name);
-        update.set("sswjId", userId);
-        update.set("sswjName", name);
-        UpdateResult updateResult = mongoTemplate.updateFirst(query, update,"slg_map");
-        assert updateResult.wasAcknowledged();
         mongoTemplate.save(user);
         return user;
     }

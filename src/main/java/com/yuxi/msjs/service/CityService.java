@@ -3,6 +3,7 @@ package com.yuxi.msjs.service;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.lang.UUID;
 import cn.hutool.core.map.MapUtil;
+import com.mongodb.client.result.UpdateResult;
 import com.yuxi.msjs.bean.conste.Acsj;
 import com.yuxi.msjs.bean.conste.Ancang;
 import com.yuxi.msjs.bean.conste.Bysj;
@@ -63,6 +64,16 @@ public class CityService {
         userCity.setZuobiao(zuobiao);
         userCity.setCityName(userName);
         mongoTemplate.save(userCity);
+        //修改地图类型为玩家城池
+        Query query = new Query(Criteria.where("_id").is(zuobiao));
+        Update update = new Update();
+        update.set("dklx", "玩家城池");
+        update.set("dkmc", userName);
+        update.set("sswjId", userId);
+        update.set("sswjName", userName);
+        UpdateResult updateResult = mongoTemplate.updateFirst(query, update,"slg_map");
+        assert updateResult.wasAcknowledged();
+
         return userCity;
     }
 

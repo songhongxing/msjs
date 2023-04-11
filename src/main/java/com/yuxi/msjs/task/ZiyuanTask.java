@@ -9,6 +9,7 @@ import com.yuxi.msjs.bean.entity.HomeUp;
 import com.yuxi.msjs.bean.entity.UserCity;
 import com.yuxi.msjs.bean.entity.ZhengBing;
 import com.yuxi.msjs.service.CityService;
+import com.yuxi.msjs.service.ZhanDouService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.BulkOperations;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -37,6 +38,8 @@ public class ZiyuanTask {
     private MongoTemplate mongoTemplate;
     @Autowired
     private CityService cityService;
+    @Autowired
+    private ZhanDouService zhanDouService;
     private ExecutorService executorService = Executors.newCachedThreadPool();
 
     @Scheduled(cron = "0 0/2 * * * ?")
@@ -205,19 +208,16 @@ public class ZiyuanTask {
      */
     @Scheduled(cron = "0/10 * * * * ?")
     public void zhandou(){
-
-        Query jqQuery = new Query(Criteria.where("ddsj").lte(DateUtil.currentSeconds() / 1000));
+        Query jqQuery = new Query(Criteria.where("ddsj").lte(DateUtil.currentSeconds()));
         List<Chuzheng> chuzhengs = mongoTemplate.find(jqQuery, Chuzheng.class);
         if(CollUtil.isNotEmpty(chuzhengs)){
             for(Chuzheng chuzheng : chuzhengs){
-                ZhanDouThread zhanDouThread = new ZhanDouThread(chuzheng.getCzId(), mongoTemplate);
+                ZhanDouThread zhanDouThread = new ZhanDouThread(chuzheng.getCzId(), mongoTemplate, zhanDouService);
                 executorService.execute(zhanDouThread);
 
 
             }
         }
-
-
     }
 
 
@@ -234,10 +234,12 @@ public class ZiyuanTask {
     public class ZhanDouThread implements Runnable{
         private String czId;
         private MongoTemplate mongoTemplate;
+        private ZhanDouService zhanDouService;
 
-        public ZhanDouThread(String czId, MongoTemplate mongoTemplate) {
+        public ZhanDouThread(String czId, MongoTemplate mongoTemplate, ZhanDouService zhanDouService) {
             this.czId = czId;
             this.mongoTemplate = mongoTemplate;
+            this.zhanDouService = zhanDouService;
         }
 
         @Override
@@ -245,7 +247,19 @@ public class ZiyuanTask {
             Query query = new Query(Criteria.where("czId").is(this.czId));
             Chuzheng chuzheng = mongoTemplate.findOne(query, Chuzheng.class);
             //计算
+            if("歼灭".equals(chuzheng.getCzlx())){
 
+            } else if("建造".equals(chuzheng.getCzlx())){
+                zhanDouService.jiancheng(chuzheng);
+            } else if("侦察".equals(chuzheng.getCzlx())){
+                zhanDouService.zhencha(chuzheng);
+            } else if("劫掠".equals(chuzheng.getCzlx())){
+
+            } else if("增援".equals(chuzheng.getCzlx())){
+                zhanDouService.zengyuan(chuzheng);
+            }
+
+//            mongoTemplate.remove(query, Chuzheng.class);
         }
     }
 }

@@ -2,13 +2,12 @@ package com.yuxi.msjs.service;
 
 import cn.hutool.core.date.DateUtil;
 import com.yuxi.msjs.bean.conste.Bzzy;
-import com.yuxi.msjs.bean.entity.Chuzheng;
-import com.yuxi.msjs.bean.entity.UserCity;
-import com.yuxi.msjs.bean.entity.Wujiang;
+import com.yuxi.msjs.bean.entity.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -28,6 +27,8 @@ public class ZhanDouService {
 
     @Autowired
     private CityService cityService;
+    @Autowired
+    private UserService userService;
     @Autowired
     private MongoTemplate mongoTemplate;
 
@@ -173,5 +174,97 @@ public class ZhanDouService {
 
     public void zhandou(String czId){
 
+    }
+
+    /**
+     * 建造分城
+     * @param chuzheng
+     */
+    public void jiancheng(Chuzheng chuzheng){
+        cityService.createCity(chuzheng.getCzUserId(),chuzheng.getCzUserName()+"分城", chuzheng.getCzZb());
+        //发系统消息
+        ZhanBao zhanBao = new ZhanBao();
+        zhanBao.setZbId(UUID.randomUUID().toString().replaceAll("-", ""));
+        zhanBao.setUserId(chuzheng.getCzUserId());
+        zhanBao.setXxbt("分城建造完成");
+        zhanBao.setXxnr("工兵在"+chuzheng.getCzZb()+"坐标处建造一座分城，请主公前往。");
+        mongoTemplate.save(zhanBao);
+    }
+
+    /**
+     * 侦察
+     * @param chuzheng
+     */
+    public void zhencha(Chuzheng chuzheng){
+        Query query = new Query(Criteria.where("userId").is(chuzheng.getGdUserId()));
+        UserCity userCity = mongoTemplate.findOne(query, UserCity.class);
+        //发系统消息
+        ZhanBao zhanBao = new ZhanBao();
+        zhanBao.setZbId(UUID.randomUUID().toString().replaceAll("-", ""));
+        zhanBao.setUserId(chuzheng.getCzUserId());
+        zhanBao.setXxbt("侦察完成");
+        zhanBao.setXxnr("这是一封侦察内容");
+        mongoTemplate.save(zhanBao);
+    }
+
+    /**
+     * 增援兵力
+     * @param chuzheng
+     */
+    public void zengyuan(Chuzheng chuzheng){
+        ZengYuan zengYuan = new ZengYuan();
+        zengYuan.setZyUserId(chuzheng.getCzUserId());
+        zengYuan.setUserId(chuzheng.getGdUserId());
+        zengYuan.setCzWj(chuzheng.getCzWjId());
+        zengYuan.setBb(chuzheng.getBb());
+        zengYuan.setQb(chuzheng.getQb());
+        zengYuan.setNb(chuzheng.getNb());
+        zengYuan.setQq(chuzheng.getQq());
+        zengYuan.setHq(chuzheng.getHq());
+        zengYuan.setZq(chuzheng.getZq());
+        zengYuan.setCh(chuzheng.getCh());
+        zengYuan.setCc(chuzheng.getCc());
+        zengYuan.setTsc(chuzheng.getTsc());
+        zengYuan.setGb(chuzheng.getGb());
+        Integer zhl = zhl(zengYuan) * 2;
+        Query query = new Query(Criteria.where("cityId").is(chuzheng.getGdCityId()));
+        UserCity userCity = mongoTemplate.findOne(query, UserCity.class);
+        Update update = new Update();
+        update.set("zhl", userCity.getZbl() + zhl);
+        mongoTemplate.updateFirst(query, update, UserCity.class);
+        //发系统消息
+        ZhanBao zhanBao = new ZhanBao();
+        zhanBao.setZbId(UUID.randomUUID().toString().replaceAll("-", ""));
+        zhanBao.setUserId(chuzheng.getGdUserId());
+        zhanBao.setXxbt("增援到达");
+        zhanBao.setXxnr(chuzheng.getCzUserName()+"玩家增援的兵力到达,请主公前往查看。");
+        mongoTemplate.save(zhanBao);
+        zhanBao = new ZhanBao();
+        zhanBao.setZbId(UUID.randomUUID().toString().replaceAll("-", ""));
+        zhanBao.setUserId(chuzheng.getCzUserId());
+        zhanBao.setXxbt("增援到达");
+        zhanBao.setXxnr("增援的兵力已到达"+chuzheng.getCzUserName()+"的城池,请主公前往查看。");
+        mongoTemplate.save(zhanBao);
+    }
+
+
+    /**
+     * 计算增援耗粮
+     * @param userCity
+     * @return
+     */
+    public Integer zhl(ZengYuan zengyuan){
+        Integer zhl = 0;
+        zhl += zengyuan.getBb() * Bzzy.getHaoliang("步兵");
+        zhl += zengyuan.getQb() * Bzzy.getHaoliang("枪兵");
+        zhl += zengyuan.getNb() * Bzzy.getHaoliang("弩兵");
+        zhl += zengyuan.getQq() * Bzzy.getHaoliang("轻骑");
+        zhl += zengyuan.getHq() * Bzzy.getHaoliang("虎骑");
+        zhl += zengyuan.getCh() * Bzzy.getHaoliang("斥候");
+        zhl += zengyuan.getZq() * Bzzy.getHaoliang("重骑");
+        zhl += zengyuan.getCc() * Bzzy.getHaoliang("冲车");
+        zhl += zengyuan.getTsc() * Bzzy.getHaoliang("投石车");
+        zhl += zengyuan.getGb() * Bzzy.getHaoliang("工兵");
+        return zhl;
     }
 }
