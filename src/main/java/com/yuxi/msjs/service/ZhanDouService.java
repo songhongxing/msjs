@@ -1,6 +1,8 @@
 package com.yuxi.msjs.service;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.StrUtil;
 import com.yuxi.msjs.bean.conste.Bzzy;
 import com.yuxi.msjs.bean.entity.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +16,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -172,9 +175,149 @@ public class ZhanDouService {
         return new ArrayList<>();
     }
 
-    public void zhandou(String czId){
+    /**
+     * 歼灭模式
+     * @param chuzheng
+     */
+    public void zhandou(Chuzheng chuzheng){
+        Query gdQuery = new Query(Criteria.where("cityId").is(chuzheng.getGdCityId()));
+        UserCity userCity = mongoTemplate.findOne(gdQuery, UserCity.class);
+        Map<String, Object> zb = new HashMap<>();
+        //计算攻击方的攻击总值
+        Long gjl = gjl(chuzheng);
+        //计算防守方的防御总值和防守方玩家的百分比
+        Long fyl = fyl(chuzheng, userCity, zb);
+        //计算双方实力差距
+        double slcj = Double.valueOf(String.format("%.2f", gjl / fyl));
+        //计算冲车对城墙的伤害,双方实力1:1,60辆冲车可砸破城墙,
+        //攻击方弱于防守方时, 实力差距 * 冲车数量 * 0.2 = 砸破城墙等级
+        //0.6 * 100 * 0.2 = 12级
+        int gjcq = (int) (slcj * chuzheng.getCc() * 0.2);
+        //计算被破坏后的城墙等级,每一级增加1%的防御力
+        int cqdj = userCity.getCq() - gjcq < 0 ? 0 : userCity.getCq() - gjcq;
+        double cqjc = 1+ cqdj / 100;
+        fyl = (long) (fyl * cqjc);
+        //攻击方胜利
+        if(gjl > fyl){
+            if(slcj > 1){
+                slcj = Double.valueOf(String.format("%.2f", 1 + slcj / 100));
+            }
+            gjl = (long) (gjl * slcj);
+            //获取损失的百分比
+            double sszb = Double.valueOf(String.format("%.2f", (gjl - fyl) / gjl));
+        }
+        //防守方胜利
+        else {
+
+        }
+
+
 
     }
+
+    /**
+     * 获取攻击力
+     * @param chuzheng
+     * @return
+     */
+    public Long gjl(Chuzheng chuzheng){
+        //查询武将
+        Query wjQuery = new Query(Criteria.where("wjId").is(chuzheng.getCzWjId()));
+        Wujiang wujiang = mongoTemplate.findOne(wjQuery, Wujiang.class);
+        double wljc = (wujiang.getWl() + 100) / 100;//攻击加成
+        long gjl = 0;
+        gjl += chuzheng.getBb() * Bzzy.getGongji("步兵");
+        gjl += chuzheng.getQb() * Bzzy.getGongji("枪兵");
+        gjl += chuzheng.getNb() * Bzzy.getGongji("弩兵");
+        gjl += chuzheng.getQq() * Bzzy.getGongji("轻骑");
+        gjl += chuzheng.getHq() * Bzzy.getGongji("虎骑");
+        gjl += chuzheng.getZq() * Bzzy.getGongji("重骑");
+        gjl = (long) (gjl * wljc);
+        //神行出征增加20的攻击力
+        if(chuzheng.getCzBuff() == 1){
+            gjl *= 1.2;
+        }
+        return gjl;
+    }
+
+    /**
+     * 防守方
+     * @param chuzheng
+     * @param zb
+     * @return
+     */
+    public Long fyl(Chuzheng chuzheng,UserCity userCity, Map<String, Object> zb){
+        long fyzz = 0;//防御总值
+        //每个玩家的防御力
+        Map<String, Long> wjgj = new HashMap<>();
+        Long ccfyl = ccFyl(userCity);
+        wjgj.put(userCity.getCityId(),ccfyl);
+        fyzz += ccfyl;
+        Query zyQuery = new Query(Criteria.where("zyCityId").is(chuzheng.getGdCityId()));
+        List<ZengYuan> zengYuans = mongoTemplate.find(zyQuery, ZengYuan.class);
+        if(CollUtil.isNotEmpty(zengYuans)){
+            for(ZengYuan zengYuan : zengYuans){
+                Long fyl = zyFyl(zengYuan);
+                wjgj.put(zengYuan.getCityId(),zyFyl(zengYuan));
+                fyzz += fyl;
+            }
+        }
+        //遍历每个玩家的防御占比
+        Set<String> wjcc = wjgj.keySet();
+        for(String key : wjcc){
+            //玩家部队防御
+            Long wjbdfy = wjgj.get(key);
+            zb.put(key, String.format("%.2f", wjbdfy/fyzz));
+        }
+        return fyzz;
+    }
+
+    /**
+     * 城池防御力
+     * @param userCity
+     * @return
+     */
+    public Long ccFyl(UserCity userCity){
+        //查询武将
+        double wljc = 1.0;
+        if(!"无".equals(userCity.getCcts())){
+            Query wjQuery = new Query(Criteria.where("wjId").is(userCity.getCcts()));
+            Wujiang wujiang = mongoTemplate.findOne(wjQuery, Wujiang.class);
+            wljc = (wujiang.getFy() + 100) / 100;//攻击加成
+        }
+        long gjl = 0;
+        gjl += userCity.getBb() * Bzzy.getFangyu("步兵");
+        gjl += userCity.getQb() * Bzzy.getFangyu("枪兵");
+        gjl += userCity.getNb() * Bzzy.getFangyu("弩兵");
+        gjl += userCity.getQq() * Bzzy.getFangyu("轻骑");
+        gjl += userCity.getHq() * Bzzy.getFangyu("虎骑");
+        gjl += userCity.getZq() * Bzzy.getFangyu("重骑");
+        gjl = (long) (gjl * wljc);
+        return gjl;
+    }
+
+    /**
+     * 增援防御力
+     * @param zengyuan
+     * @return
+     */
+    public Long zyFyl(ZengYuan zengyuan){
+        //查询武将
+        Query wjQuery = new Query(Criteria.where("wjId").is(zengyuan.getCzWj()));
+        Wujiang wujiang = mongoTemplate.findOne(wjQuery, Wujiang.class);
+        double wljc = (wujiang.getFy() + 100) / 100;//攻击加成
+        long gjl = 0;
+        gjl += zengyuan.getBb() * Bzzy.getFangyu("步兵");
+        gjl += zengyuan.getQb() * Bzzy.getFangyu("枪兵");
+        gjl += zengyuan.getNb() * Bzzy.getFangyu("弩兵");
+        gjl += zengyuan.getQq() * Bzzy.getFangyu("轻骑");
+        gjl += zengyuan.getHq() * Bzzy.getFangyu("虎骑");
+        gjl += zengyuan.getZq() * Bzzy.getFangyu("重骑");
+        gjl = (long) (gjl * wljc);
+        return gjl;
+    }
+
+
 
     /**
      * 建造分城
@@ -213,9 +356,12 @@ public class ZhanDouService {
      */
     public void zengyuan(Chuzheng chuzheng){
         ZengYuan zengYuan = new ZengYuan();
+        zengYuan.setZyId(UUID.randomUUID().toString().replaceAll("-", ""));
         zengYuan.setZyUserId(chuzheng.getCzUserId());
         zengYuan.setUserId(chuzheng.getGdUserId());
         zengYuan.setCzWj(chuzheng.getCzWjId());
+        zengYuan.setCityId(chuzheng.getCzCityId());
+        zengYuan.setZyCityId(chuzheng.getGdCityId());
         zengYuan.setBb(chuzheng.getBb());
         zengYuan.setQb(chuzheng.getQb());
         zengYuan.setNb(chuzheng.getNb());

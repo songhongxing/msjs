@@ -15,9 +15,15 @@ import org.springframework.data.mongodb.core.mapping.Field;
 public class ZengYuan {
 
     @Field
+    private String zyId;//增援id
+    @Field
     private String userId;//用户id
     @Field
-    private String zyUserId;//增援用户id
+    private String zyUserId;//被增援用户id
+    @Field
+    private String cityId;//增援城池id
+    @Field
+    private String zyCityId;//被增援城池id
     @Field
     private String czWj;//增援的出征武将
     @Field

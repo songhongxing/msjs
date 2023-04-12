@@ -110,5 +110,6 @@ public class UserCity {
     private Integer tiejccl = 0;//铁加成产量 48
     @Field
     private Integer liangjccl = 0;//粮加成产量 49
-
+    @Field
+    private String ccts = "无";//城池太守 50
 }
