@@ -67,4 +67,6 @@ public class Chuzheng {
     private Integer gb = 0;//工兵 24
     @Field
     private String gdCityName=""; //被攻打城市名称25
+    @Field
+    private String czCityName=""; //出征城市名称26
 }

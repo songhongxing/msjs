@@ -10,6 +10,7 @@ import com.yuxi.msjs.bean.entity.UserCity;
 import com.yuxi.msjs.bean.entity.ZhengBing;
 import com.yuxi.msjs.service.CityService;
 import com.yuxi.msjs.service.ZhanDouService;
+import com.yuxi.msjs.util.GameUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.BulkOperations;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -130,7 +131,7 @@ public class ZiyuanTask {
                 query.addCriteria(Criteria.where("bz").is(zhengBing.getBz()));
                 mongoTemplate.remove(query,"zhengbing");
                 //计算兵种耗粮
-                Integer zhl = cityService.zhl(userCity);
+                Integer zhl = GameUtil.zhl(userCity);
                 update = new Update();
                 update.set("zhl", zhl);
                 mongoTemplate.updateFirst(query, update, "user_city");
@@ -160,8 +161,8 @@ public class ZiyuanTask {
         if(CollUtil.isNotEmpty(cityList)){
             for(UserCity city : cityList){
                 bingliQuery = new Query(Criteria.where("cityId").is(city.getCityId()));
-                int zbl = city.getBb()+city.getQb()+city.getNb()+city.getQq()+city.getHq()+city.getZq()+city.getCh()+city.getGb()+city.getCc()+city.getTsc();
                 int zgm = city.getNzt()+city.getTqt()+city.getJg()+city.getJs()+city.getBy()+city.getCk()+city.getLc()+city.getAc()+city.getCq()+city.getLc()+city.getShikuang()+city.getTiekuang()+city.getNongtian();
+                int zbl = city.getBb()+city.getQb()+city.getNb()+city.getQq()+city.getHq()+city.getZq()+city.getCh()+city.getGb()+city.getCc()+city.getTsc();
                 bingliUpdate.set("zbl", zbl);
                 bingliUpdate.set("zgm", zgm);
                 mongoTemplate.updateFirst(bingliQuery, bingliUpdate, "user_city");

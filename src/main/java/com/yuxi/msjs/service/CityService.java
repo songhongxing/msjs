@@ -340,25 +340,7 @@ public class CityService {
         return mongoTemplate.find(query, HomeUp.class);
     }
 
-    /**
-     * 计算耗粮
-     * @param userCity
-     * @return
-     */
-    public Integer zhl(UserCity userCity){
-        Integer zhl = 0;
-        zhl += userCity.getBb() * Bzzy.getHaoliang("步兵");
-        zhl += userCity.getQb() * Bzzy.getHaoliang("枪兵");
-        zhl += userCity.getNb() * Bzzy.getHaoliang("弩兵");
-        zhl += userCity.getQq() * Bzzy.getHaoliang("轻骑");
-        zhl += userCity.getHq() * Bzzy.getHaoliang("虎骑");
-        zhl += userCity.getCh() * Bzzy.getHaoliang("斥候");
-        zhl += userCity.getZq() * Bzzy.getHaoliang("重骑");
-        zhl += userCity.getCc() * Bzzy.getHaoliang("冲车");
-        zhl += userCity.getTsc() * Bzzy.getHaoliang("投石车");
-        zhl += userCity.getGb() * Bzzy.getHaoliang("工兵");
-        return zhl;
-    }
+
 
     /**
      * 征兵队列
