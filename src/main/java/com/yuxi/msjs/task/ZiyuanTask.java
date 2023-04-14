@@ -258,6 +258,8 @@ public class ZiyuanTask {
 
             } else if("增援".equals(chuzheng.getCzlx())){
                 zhanDouService.zengyuan(chuzheng);
+            } else if("返回".equals(chuzheng.getCzlx())){
+                zhanDouService.fanhui(chuzheng);
             }
 
 //            mongoTemplate.remove(query, Chuzheng.class);

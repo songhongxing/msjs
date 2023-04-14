@@ -34,7 +34,7 @@ public class Chuzheng {
     @Field
     private Integer gdZb;//攻打坐标8
     @Field
-    private String czlx; //出征类型,歼灭、劫掠、增援、建城、侦查 9
+    private String czlx; //出征类型,歼灭、劫掠、增援、建城、侦查,返回 9
     @Field
     private Integer czBuff;//0普通出征,1神行出征10
     @Field
@@ -69,4 +69,6 @@ public class Chuzheng {
     private String gdCityName=""; //被攻打城市名称25
     @Field
     private String czCityName=""; //出征城市名称26
+    @Field
+    private Integer xjsj = 0;//行军时间 27
 }

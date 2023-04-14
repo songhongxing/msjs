@@ -568,6 +568,46 @@ public class CityService {
         return mongoTemplate.find(query, Wujiang.class);
     }
 
+
+    /**
+     * 战斗后增加武将经验
+     *
+     * @param wjId
+     * @param jyxx
+     */
+    public void zjwjjy(String wjId, String jyxx) {
+        int zjjy = Integer.valueOf(jyxx.split(",")[0]);
+        int lwzt = Integer.valueOf(jyxx.split(",")[1]);
+        Query query = new Query(Criteria.where("wjId").is(wjId));
+        Wujiang wujiang = mongoTemplate.findOne(query, Wujiang.class);
+        Integer jy = wujiang.getJy();
+        jy = jy + zjjy;
+        Integer olddj = wujiang.getDj();//当前等级
+        Integer xdj = olddj;//新等级
+        Integer sxjy = wujiang.getSjsx();
+        while (jy >= sxjy) {
+            sxjy = 10000 + 200 * olddj * olddj;
+            jy = jy - sxjy;
+            xdj += 1;
+        }
+        Update update = new Update();
+        update.set("dj", xdj);
+        update.set("jy", jy);
+        update.set("sjsx", 10000 + 200 * xdj * xdj);
+        //新等级大于旧等级的时候,对武将的属性进行加点
+        if (xdj > olddj) {
+            int sjs = xdj - olddj;
+            update.set("wl", wujiang.getWl() + sjs > 60 + wujiang.getXj() * 10 ? 60 + wujiang.getXj() * 10 : wujiang.getWl() + sjs);
+            update.set("fy", wujiang.getFy() + sjs > 60 + wujiang.getXj() * 10 ? 60 + wujiang.getXj() * 10 : wujiang.getFy() + sjs);
+            update.set("sd", wujiang.getSd() + sjs > 60 + wujiang.getXj() * 10 ? 60 + wujiang.getXj() * 10 : wujiang.getSd() + sjs);
+            update.set("zl", wujiang.getZl() + sjs > 60 + wujiang.getXj() * 10 ? 60 + wujiang.getXj() * 10 : wujiang.getZl() + sjs);
+        }
+        if(lwzt == 1){
+            update.set("lwzt", 1);
+        }
+        mongoTemplate.updateFirst(query, update, Wujiang.class);
+    }
+
     /**
      * 根据经验返回等级
      *

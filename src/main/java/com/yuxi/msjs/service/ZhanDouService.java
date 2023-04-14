@@ -4,6 +4,8 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
 import com.yuxi.msjs.bean.conste.Ancang;
 import com.yuxi.msjs.bean.conste.Bzzy;
+import com.yuxi.msjs.bean.conste.Chanliang;
+import com.yuxi.msjs.bean.conste.Rongliang;
 import com.yuxi.msjs.bean.entity.Chuzheng;
 import com.yuxi.msjs.bean.entity.User;
 import com.yuxi.msjs.bean.entity.UserCity;
@@ -11,6 +13,7 @@ import com.yuxi.msjs.bean.entity.Wujiang;
 import com.yuxi.msjs.bean.entity.ZengYuan;
 import com.yuxi.msjs.bean.entity.ZhanBao;
 import com.yuxi.msjs.util.GameUtil;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -20,6 +23,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -40,22 +44,40 @@ public class ZhanDouService {
     private UserService userService;
     @Autowired
     private MongoTemplate mongoTemplate;
+    //增援列表
+    private Map<String, ZengYuan> zengyuans = new HashMap<>();
+    //增援方的每条增援记录占比
+    private Map<String, Double> zyzb = new HashMap<>();
+    //增援兵力总数
+    private Map<String, Integer> zyblzs = new HashMap<>();
+    //增援兵力剩余总数
+    private Map<String, Integer> zyblsyzs = new HashMap<>();
+    //武将经验<武将id, "经验,是否流亡">
+    private Map<String, String> wjjy = new HashMap<>();
+    //防守城池的防御力占比
+    private double fszb = 0;
+    //防守城池的总兵力
+    private Integer fszbl = 0;
+    //参战玩家列表
+    Set<String> czwj = new HashSet<>();
+
 
     public boolean chuzheng(Chuzheng chuzheng) {
         boolean bl = checkBl(chuzheng);
-        if(bl){
+        if (bl) {
             int sd = sd(chuzheng);
             chuzheng.setSd(sd);
             //计算距离 距离*100/部队速度
             int jl = Math.abs(chuzheng.getCzZb() - chuzheng.getGdZb());
             int xjsj = 0;//行军时间
-            if(chuzheng.getCzBuff() == 1){
-                xjsj = (int)(jl * 100 / (sd*1.5));
+            if (chuzheng.getCzBuff() == 1) {
+                xjsj = (int) (jl * 100 / (sd * 1.5));
             } else {
                 xjsj = jl * 100 / sd;
             }
-            int ddsj = (int)(DateUtil.currentSeconds() + xjsj);
+            int ddsj = (int) (DateUtil.currentSeconds() + xjsj);
             chuzheng.setDdsj(ddsj);
+            chuzheng.setXjsj(xjsj);
             chuzheng.setCzId(UUID.randomUUID().toString().replaceAll("-", ""));
             mongoTemplate.save(chuzheng);
         }
@@ -187,19 +209,35 @@ public class ZhanDouService {
      * @param chuzheng
      */
     public void zhandou(Chuzheng chuzheng) {
+        zengyuans.clear();
+        zyzb.clear();
+        zyblzs.clear();
+        czwj.clear();
+        wjjy.clear();
         Query gdQuery = new Query(Criteria.where("cityId").is(chuzheng.getGdCityId()));
         UserCity userCity = mongoTemplate.findOne(gdQuery, UserCity.class);
-        Map<String, Double> zb = new HashMap<>();
-        Map<String, Integer> fsbl = new HashMap<>();//防守兵力列表
-        Map<String, String> czlb = new HashMap<>();//参战玩家列表
+        Query zyQuery = new Query(Criteria.where("zyCityId").is(chuzheng.getGdCityId()));
+        List<ZengYuan> zengYuans = mongoTemplate.find(zyQuery, ZengYuan.class);
+        czwj.add(chuzheng.getCzUserId());
+        czwj.add(chuzheng.getGdUserId());
+        if (CollUtil.isNotEmpty(zengYuans)) {
+            for (ZengYuan zengYuan : zengYuans) {
+                zengyuans.put(zengYuan.getZyId(), zengYuan);
+                czwj.add(zengYuan.getUserId());
+                zyblzs.put(zengYuan.getZyId(), fsfbl(zengYuan));
+            }
+        } else {
+            fszb = 1;
+        }
+
+
         Map<String, Integer> jlzy = new HashMap<>();//劫掠资源
-        Map<String, String> wjlb = new HashMap<>();//玩家列表
-        czlb.put(chuzheng.getCzCityId(), "攻击方" + "-" + chuzheng.getCzUserId() + "-" + chuzheng.getCzUserName() + "-" + chuzheng.getCzCityName());
+
         //计算攻击方的攻击总值
         Long gjl = gjl(chuzheng);
         //计算防守方的防御总值和防守方玩家的百分比
-        Long fyl = fyl(chuzheng, userCity, zb, fsbl, czlb, wjlb);
-
+        Long fyl = fyl(userCity);
+        fszbl = GameUtil.zbl(userCity);
         //计算双方实力差距
         double slcj = Double.valueOf(String.format("%.2f", gjl / fyl));
         //计算冲车对城墙的伤害,双方实力1:1,60辆冲车可砸破城墙,
@@ -217,27 +255,45 @@ public class ZhanDouService {
             gjl = (long) (gjl * slcj);
             //获取损失的百分比
             double sszb = Double.valueOf(String.format("%.2f", (gjl - fyl) / gjl));
-            jlzy = gjfsy(sszb,chuzheng);
+            jlzy = gjfsy(sszb, chuzheng, userCity);
             //计算攻击方剩余兵力
             int gjfsy = (int) (gjfbl * sszb);
-            String zbnr = zbnr(czlb, fsbl, gjfbl, gjfsy, jlzy);
-            Map<String, String> fsfjg = fsfjg(fsbl, zb, false, gjfbl, 1, wjlb);
-            Map<String, String> gjfjg = gjfjg(fsbl, chuzheng.getCzUserId(), false, sszb);
-            fszb("攻方胜", chuzheng, zbnr, czlb, fsfjg, gjfjg);
+            String zbnr = zbnr(chuzheng, gjfbl, gjfsy, fszbl, 0, jlzy);
+            Map<String, String> fsfjg = fsfjg(chuzheng, userCity, false, gjfbl, sszb);
+            Map<String, String> gjfjg = gjfjg(chuzheng, true, sszb);
+            fszbFunc("攻方胜", chuzheng, zbnr, fsfjg, gjfjg);
         }
         //防守方胜利
         else {
-            slcj = Double.valueOf(String.format("%.2f", 1 +  fyl / gjl / 100));
+            slcj = Double.valueOf(String.format("%.2f", 1 + fyl / gjl / 100));
             fyl = (long) (fyl * slcj);
             //获取损失的百分比
-            jlzy = gjfsy(1,chuzheng);
+            jlzy = gjfsy(1, chuzheng, userCity);
             double sszb = Double.valueOf(String.format("%.2f", (fyl - gjl) / fyl));
-            String zbnr = zbnr(czlb, fsbl, gjfbl, 0, null);
-            Map<String, String> fsfjg = fsfjg(fsbl, zb, false, gjfbl, 1, wjlb);
-            Map<String, String> gjfjg = gjfjg(fsbl, chuzheng.getCzUserId(), false, sszb);
-            fszb("守方胜", chuzheng, zbnr, czlb, fsfjg, gjfjg);
+            //计算防守方剩余兵力
+            int fsfsy = (int) (fszbl * sszb);
+            String zbnr = zbnr(chuzheng, gjfbl, 0, fszbl, fsfsy, jlzy);
+            Map<String, String> fsfjg = fsfjg(chuzheng, userCity, false, gjfbl, 1);
+            Map<String, String> gjfjg = gjfjg(chuzheng, false, sszb);
+            fszbFunc("守方胜", chuzheng, zbnr, fsfjg, gjfjg);
 
         }
+        zjwjjy();
+        Chuzheng fanhui = new Chuzheng();
+        fanhui.setCzId(UUID.randomUUID().toString().replaceAll("-", ""));
+        fanhui.setDdsj((int) (DateUtil.currentSeconds() + chuzheng.getXjsj()));
+        BeanUtils.copyProperties(chuzheng, fanhui);
+    }
+
+    /**
+     * 增加武将经验
+     */
+    public void zjwjjy() {
+        Set<String> keys = wjjy.keySet();
+        for (String key : keys) {
+            cityService.zjwjjy(key, wjjy.get(key));
+        }
+
     }
 
     /**
@@ -246,33 +302,25 @@ public class ZhanDouService {
      * @param slf
      * @param chuzheng
      * @param zbnr
-     * @param czlb
      */
-    public void fszb(String slf, Chuzheng chuzheng, String zbnr, Map<String, String> czlb, Map<String, String> fsjgfl, Map<String, String> gjjgfl) {
+    public void fszbFunc(String slf, Chuzheng chuzheng, String zbnr, Map<String, String> fsjgfl, Map<String, String> gjjgfl) {
         //发送战报
-        Set<String> czCitys = czlb.keySet();
-        List<String> userIds = new ArrayList<>();
         ZhanBao zhanBao = null;
         List<ZhanBao> zhanBaos = new ArrayList<>();
-        for (String cityId : czCitys) {
-            String nr = czlb.get(cityId);
-            String userId = nr.split("-")[1];
-            if (!userIds.contains(userId)) {
-                userIds.add(userId);
-                zhanBao = new ZhanBao();
-                zhanBao.setZbId(UUID.randomUUID().toString().replaceAll("-", ""));
-                zhanBao.setUserId(userId);
-                zhanBao.setDate(DateUtil.now());
-                zhanBao.setSf(slf);
-                zhanBao.setXxbt(chuzheng.getCzCityName() + "攻打" + chuzheng.getGdCityName() + "战报");
-                zhanBao.setXxnr(zbnr);
-                if (gjjgfl.get(userId) != null) {
-                    zhanBao.setJungong(Integer.valueOf(gjjgfl.get(userId).split(",")[0]));
-                    zhanBao.setFulu(Integer.valueOf(gjjgfl.get(userId).split(",")[1]));
-                } else {
-                    zhanBao.setJungong(Integer.valueOf(fsjgfl.get(userId).split(",")[0]));
-                    zhanBao.setFulu(Integer.valueOf(fsjgfl.get(userId).split(",")[1]));
-                }
+        for (String userId : czwj) {
+            zhanBao = new ZhanBao();
+            zhanBao.setZbId(UUID.randomUUID().toString().replaceAll("-", ""));
+            zhanBao.setUserId(userId);
+            zhanBao.setDate(DateUtil.now());
+            zhanBao.setSf(slf);
+            zhanBao.setXxbt(chuzheng.getCzCityName() + "攻打" + chuzheng.getGdCityName() + "战报");
+            zhanBao.setXxnr(zbnr);
+            if (gjjgfl.get(userId) != null) {
+                zhanBao.setJungong(Integer.valueOf(gjjgfl.get(userId).split(",")[0]));
+                zhanBao.setFulu(Integer.valueOf(gjjgfl.get(userId).split(",")[1]));
+            } else {
+                zhanBao.setJungong(Integer.valueOf(fsjgfl.get(userId).split(",")[0]));
+                zhanBao.setFulu(Integer.valueOf(fsjgfl.get(userId).split(",")[1]));
             }
             zhanBaos.add(zhanBao);
         }
@@ -282,18 +330,19 @@ public class ZhanDouService {
     /**
      * 计算攻击方军功和俘虏
      *
-     * @param fsbl   防守兵力
-     * @param userId 攻击方用户
-     * @param sl     是否胜利
-     * @param fsssl  防守损失率,防守方损失率为n%,防守方全灭,该值为1
+     * @param sl    是否胜利
+     * @param fsssl 防守损失率,防守方损失率为n%,防守方全灭,该值为1
      */
-    public Map<String, String> gjfjg(Map<String, Integer> fsbl, String userId, boolean sl, double fsssl) {
-        int jg = 0;
+    public Map<String, String> gjfjg(Chuzheng chuzheng, boolean sl, double fsssl) {
+        int jg = fszbl;
         int fl = 0;
+        String userId = chuzheng.getCzUserId();
         Map<String, String> gjfjg = new HashMap<>();
-        Set<String> keys = fsbl.keySet();
-        for (String key : keys) {
-            jg = jg + fsbl.get(key);
+        if (CollUtil.isNotEmpty(zyblzs)) {
+            Set<String> keys = zyblzs.keySet();
+            for (String key : keys) {
+                jg = jg + zyblzs.get(key);
+            }
         }
         jg = (int) (jg * fsssl);
         if (sl) {
@@ -307,18 +356,19 @@ public class ZhanDouService {
         update.set("jungong", user.getJungong() + jg);
         update.set("flsl", user.getFlsl() + fl);
         mongoTemplate.updateFirst(userQuery, update, User.class);
+        int lwzt = sl ? 0 : 1;
+        wjjy.put(chuzheng.getCzWjId(), jg + "," + lwzt);
         return gjfjg;
     }
 
     /**
      * 防守方军功计算
      *
-     * @param fsbl  防守方列表
      * @param sl    胜利/失败
      * @param gjfbl 攻击方兵力
      * @param gjssl 攻击方损失率,攻击方损失率为n%,攻击方全灭,该值为1
      */
-    public Map<String, String> fsfjg(Map<String, Integer> fsbl, Map<String, Double> zb, boolean sl, Integer gjfbl, double gjssl, Map<String, String> wjlb) {
+    public Map<String, String> fsfjg(Chuzheng chuzheng, UserCity userCity, boolean sl, Integer gjfbl, double gjssl) {
         int zjg = 0;//总军功
         int jg = 0;//个人军功
         int zfl = 0;//俘虏
@@ -326,15 +376,28 @@ public class ZhanDouService {
         Map<String, String> fsjgfl = new HashMap<>();
         Map<String, Integer> yhjg = new HashMap<>();
         Map<String, Integer> yhfl = new HashMap<>();
-        Set<String> keys = fsbl.keySet();
+        Set<String> keys = zengyuans.keySet();
+        ZengYuan zengYuan;
         zjg = (int) (gjfbl * gjssl);
-        zfl = (int) (zjg * 0.05);
-
-        for (String key : keys) {
-            String userId = wjlb.get(key);
-            jg = (int) (zb.get(key) * zjg);
-            fl = (int) (zb.get(key) * zfl);
-            if (sl) {
+        zfl = sl ? (int) (zjg * 0.05) : 0;
+        int lwzt = sl ? 0 : 1;
+        //如果带了投石车,胜利后破坏城市的建筑
+        if (!sl && chuzheng.getTsc() > 0) {
+            phjz(chuzheng.getTsc(), userCity);
+        }
+        if (CollUtil.isEmpty(keys)) {
+            yhjg.put(chuzheng.getGdUserId(), zjg);
+            yhfl.put(chuzheng.getGdUserId(), zfl);
+            if (!"无".equals(userCity.getCcts())) {
+                wjjy.put(userCity.getCcts(), zjg + "," + lwzt);
+            }
+        } else {
+            for (String key : keys) {
+                zengYuan = zengyuans.get(key);
+                String userId = zengYuan.getUserId();
+                jg = (int) (zyzb.get(key) * zjg);
+                fl = (int) (zyzb.get(key) * zfl);
+                wjjy.put(zengYuan.getCzWj(), jg + "," + lwzt);
                 if (yhjg.get(userId) == null) {
                     yhjg.put(userId, jg);
                     yhfl.put(userId, fl);
@@ -342,14 +405,9 @@ public class ZhanDouService {
                     yhjg.put(userId, yhjg.get(userId) + jg);
                     yhfl.put(userId, yhjg.get(userId) + fl);
                 }
-            } else {
-                yhfl.put(userId, 0);
-                if (yhjg.get(userId) == null) {
-                    yhjg.put(userId, jg);
-                } else {
-                    yhjg.put(userId, yhjg.get(userId) + jg);
-                }
             }
+            yhjg.put(chuzheng.getGdUserId(), (int) (zjg * fszb));
+            yhfl.put(chuzheng.getGdUserId(), (int) (zfl * fszb));
 
         }
         User user;
@@ -369,23 +427,106 @@ public class ZhanDouService {
 
     }
 
-
-    public String zbnr(Map<String, String> czlb, Map<String, Integer> fsbl, Integer gjfbl, Integer gjfsy, Map<String, Integer> jlzy) {
-        StringBuffer sb = new StringBuffer();
-        Set<String> cityIds = czlb.keySet();
-        int i = 0;
-        for (String key : cityIds) {
-            String czf = czlb.get(key);
-            if (i == 0) {
-                sb.append("攻击方:" + czf.split("-")[2] + czf.split("-")[3] + "\n");
-                sb.append("兵力损失:" + gjfsy + "/" + gjfbl + "\n");
-            } else {
-                sb.append("防守方:" + czf.split("-")[2] + czf.split("-")[3] + "\n");
-                sb.append("兵力损失:0" + "/" + fsbl.get(key) + "\n");
+    /**
+     * 破坏城市建筑,每2个投石车可以破坏建筑1级
+     *
+     * @param tsc
+     * @param userCity
+     */
+    public void phjz(Integer tsc, UserCity userCity) {
+        int jzdj = 0;
+        do {
+            if (userCity.getNzt() > 0 && tsc > 2) {
+                tsc -= 2;
             }
-            i++;
+            if (userCity.getTqt() > 0 && tsc > 2) {
+                tsc -= 2;
+            }
+            if (userCity.getJg() > 0 && tsc > 2) {
+                tsc -= 2;
+            }
+            if (userCity.getJs() > 0 && tsc > 2) {
+                tsc -= 2;
+            }
+            if (userCity.getBy() > 0 && tsc > 2) {
+                tsc -= 2;
+            }
+            if (userCity.getLc() > 0 && tsc > 2) {
+                tsc -= 2;
+            }
+            if (userCity.getCk() > 0 && tsc > 2) {
+                tsc -= 2;
+            }
+            if (userCity.getAc() > 0 && tsc > 2) {
+                tsc -= 2;
+            }
+            if (userCity.getCq() > 0 && tsc > 2) {
+                tsc -= 2;
+            }
+            if (userCity.getCq() > 0 && tsc > 2) {
+                tsc -= 2;
+            }
+            if (userCity.getLinchang() > 0 && tsc > 2) {
+                tsc -= 2;
+            }
+            if (userCity.getShikuang() > 0 && tsc > 2) {
+                tsc -= 2;
+            }
+            if (userCity.getTiekuang() > 0 && tsc > 2) {
+                tsc -= 2;
+            }
+            if (userCity.getNongtian() > 0 && tsc > 2) {
+                tsc -= 2;
+            }
+        } while (tsc > 2 && jzdj > 0);
+        Query query = new Query(Criteria.where("cityId").is(userCity.getCityId()));
+        Update update = new Update();
+        update.set("nzt", userCity.getNzt());
+        update.set("tqt", userCity.getTqt());
+        update.set("jg", userCity.getJg());
+        update.set("js", userCity.getJs());
+        update.set("by", userCity.getBy());
+        update.set("lc", userCity.getLc());
+        update.set("ck", userCity.getCk());
+        update.set("ac", userCity.getAc());
+        update.set("cq", userCity.getCq());
+        update.set("linchang", userCity.getLinchang());
+        update.set("shikuang", userCity.getShikuang());
+        update.set("tiekuang", userCity.getTiekuang());
+        update.set("nongtian", userCity.getNongtian());
+        update.set("ckcc", Rongliang.getRongliang(userCity.getCk()));
+        update.set("lccc", Rongliang.getRongliang(userCity.getLc()));
+        update.set("mucl", Chanliang.getChanliang(userCity.getLinchang()));
+        update.set("shicl", Chanliang.getChanliang(userCity.getShikuang()));
+        update.set("tiecl", Chanliang.getChanliang(userCity.getTiekuang()));
+        update.set("liangcl", Chanliang.getChanliang(userCity.getNongtian()));
+        update.set("ccts", "无");
+        update.set("cctsName", "无");
+        mongoTemplate.updateFirst(query, update, UserCity.class);
+    }
+
+    /**
+     * 战报内容
+     *
+     * @param gjfbl
+     * @param gjfsy
+     * @param jlzy
+     * @return
+     */
+    public String zbnr(Chuzheng chuzheng, Integer gjfbl, Integer gjfsy, Integer fsfbl, Integer fsfsy, Map<String, Integer> jlzy) {
+        StringBuffer sb = new StringBuffer();
+        Set<String> zyIds = zengyuans.keySet();
+        sb.append("攻击方:" + chuzheng.getCzUserName() + "-" + chuzheng.getCzCityName() + "\n");
+        sb.append("兵力损失:" + gjfsy + "/" + gjfbl + "\n");
+        sb.append("防守方:" + chuzheng.getGdUserName() + "-" + chuzheng.getGdCityName() + "\n");
+        sb.append("兵力损失:" + fsfsy + "/" + fsfbl + "\n");
+        ZengYuan zengyuan = null;
+        for (String key : zyIds) {
+            zengyuan = zengyuans.get(key);
+            sb.append("防守方:" + zengyuan.getUserName() + "-" + zengyuan.getCityName() + "\n");
+            sb.append("兵力损失:" + zyblsyzs.get(key) + "/" + zyblzs.get(key) + "\n");
         }
-        if(jlzy != null){
+        if (jlzy != null) {
             sb.append("劫掠资源:木" + jlzy.get("mu") + ",石" + jlzy.get("shi") + ",铁" + jlzy.get("tie") + ",粮" + jlzy.get("liang"));
         } else {
             sb.append("劫掠资源:木0,石0,铁0,粮0");
@@ -421,15 +562,13 @@ public class ZhanDouService {
      * @author songhongxing
      * @date 2023/04/13 9:54 上午
      */
-    public Map<String, Integer> gjfsy(double sszb, Chuzheng chuzheng) {
-        Query cityQuery = new Query(Criteria.where("cityId").is(chuzheng.getCzCityId()));
-        UserCity userCity = mongoTemplate.findOne(cityQuery, UserCity.class);
-        int bb = userCity.getBb() - (int) (chuzheng.getBb() * sszb);
-        int qb = userCity.getQb() - (int) (chuzheng.getQb() * sszb);
-        int nb = userCity.getNb() - (int) (chuzheng.getNb() * sszb);
-        int qq = userCity.getQq() - (int) (chuzheng.getQq() * sszb);
-        int hq = userCity.getHq() - (int) (chuzheng.getHq() * sszb);
-        int zq = userCity.getZq() - (int) (chuzheng.getZq() * sszb);
+    public Map<String, Integer> gjfsy(double sszb, Chuzheng chuzheng, UserCity userCity) {
+        int bb = chuzheng.getBb() - (int) (chuzheng.getBb() * sszb);
+        int qb = chuzheng.getQb() - (int) (chuzheng.getQb() * sszb);
+        int nb = chuzheng.getNb() - (int) (chuzheng.getNb() * sszb);
+        int qq = chuzheng.getQq() - (int) (chuzheng.getQq() * sszb);
+        int hq = chuzheng.getHq() - (int) (chuzheng.getHq() * sszb);
+        int zq = chuzheng.getZq() - (int) (chuzheng.getZq() * sszb);
         Update update = new Update();
         update.set("bb", bb);
         update.set("qb", qb);
@@ -437,17 +576,111 @@ public class ZhanDouService {
         update.set("qq", qq);
         update.set("zq", zq);
         update.set("hq", hq);
-        update.set("cc", userCity.getCc() - (int) (chuzheng.getCc() * sszb));
-        update.set("tsc", userCity.getTsc() - (int) (chuzheng.getTsc() * sszb));
-        update.set("zhl", GameUtil.zhl(userCity));
-        update.set("zbl", GameUtil.zbl(userCity));
-        mongoTemplate.updateFirst(cityQuery, update, UserCity.class);
-        cityQuery = new Query(Criteria.where("cityId").is(chuzheng.getGdCityId()));
-        userCity = mongoTemplate.findOne(cityQuery, UserCity.class);
+        update.set("cc", chuzheng.getCc() - (int) (chuzheng.getCc() * sszb));
+        update.set("tsc", chuzheng.getTsc() - (int) (chuzheng.getTsc() * sszb));
         Map<String, Integer> jlzy = jlzy(userCity, zyz(bb, qb, nb, qq, hq, zq));
         return jlzy;
     }
 
+    /**
+     * 兵力回到城市
+     * @param chuzheng
+     * @return
+     */
+    public void fanhui(Chuzheng chuzheng) {
+        Query cityQuery = new Query(Criteria.where("cityId").is(chuzheng.getCzCityId()));
+        UserCity userCity = mongoTemplate.findOne(cityQuery, UserCity.class);
+        userCity.setBb(userCity.getBb() - chuzheng.getBb());
+        userCity.setQb(userCity.getQb() - chuzheng.getQb());
+        userCity.setNb(userCity.getNb() - chuzheng.getNb());
+        userCity.setQq(userCity.getQq() - chuzheng.getQq());
+        userCity.setHq(userCity.getHq() - chuzheng.getHq());
+        userCity.setZq(userCity.getZq() - chuzheng.getZq());
+        userCity.setCc(userCity.getCc() - chuzheng.getCc());
+        userCity.setTsc(userCity.getTsc() - chuzheng.getTsc());
+        Update update = new Update();
+        update.set("bb", userCity.getBb());
+        update.set("qb", userCity.getQb());
+        update.set("nb", userCity.getNb());
+        update.set("qq", userCity.getQq());
+        update.set("zq", userCity.getZq());
+        update.set("hq", userCity.getHq());
+        update.set("cc", userCity.getCc());
+        update.set("tsc", userCity.getTsc());
+        update.set("zhl", GameUtil.zhl(userCity));
+        update.set("zbl", GameUtil.zbl(userCity));
+        mongoTemplate.updateFirst(cityQuery, update, UserCity.class);
+    }
+
+    /**
+     * 防守兵力剩余
+     *
+     * @param sszb
+     */
+    public void fsfsy(double sszb, UserCity userCity, boolean sl) {
+        Query cityQuery = new Query(Criteria.where("cityId").is(userCity.getCityId()));
+        int bb = userCity.getBb() - (int) (userCity.getBb() * sszb);
+        int qb = userCity.getQb() - (int) (userCity.getQb() * sszb);
+        int nb = userCity.getNb() - (int) (userCity.getNb() * sszb);
+        int qq = userCity.getQq() - (int) (userCity.getQq() * sszb);
+        int hq = userCity.getHq() - (int) (userCity.getHq() * sszb);
+        int zq = userCity.getZq() - (int) (userCity.getZq() * sszb);
+        int cc = userCity.getZq() - (int) (userCity.getCc() * sszb);
+        int tsc = userCity.getZq() - (int) (userCity.getTsc() * sszb);
+        int gb = userCity.getZq() - (int) (userCity.getGb() * sszb);
+        int ch = userCity.getZq() - (int) (userCity.getCh() * sszb);
+        Update update = new Update();
+        update.set("bb", bb);
+        update.set("qb", qb);
+        update.set("nb", nb);
+        update.set("qq", qq);
+        update.set("zq", zq);
+        update.set("hq", hq);
+        update.set("cc", cc);
+        update.set("tsc", tsc);
+        update.set("gb", gb);
+        update.set("ch", ch);
+        update.set("zhl", GameUtil.zhl(userCity));
+        update.set("zbl", GameUtil.zbl(userCity));
+        mongoTemplate.updateFirst(cityQuery, update, UserCity.class);
+        ZengYuan zengYuan;
+        UserCity zyUserCity;
+        Query zyCityQuery;
+        Query deleteQuery;
+        if (CollUtil.isNotEmpty(zengyuans)) {
+            Set<String> keys = zengyuans.keySet();
+            for (String key : keys) {
+                zengYuan = zengyuans.get(key);
+                update = new Update();
+                zyCityQuery = new Query(Criteria.where("cityId").is(zengYuan.getCityId()));
+                zyUserCity = mongoTemplate.findOne(zyCityQuery, UserCity.class);
+                update.set("bb", sl ? zyUserCity.getBb() - (int) (zengYuan.getBb() * sszb) : zyUserCity.getBb() - zengYuan.getBb());
+                update.set("qb", sl ? zyUserCity.getQb() - (int) (zengYuan.getQb() * sszb) : zyUserCity.getQb() - zengYuan.getQb());
+                update.set("nb", sl ? zyUserCity.getNb() - (int) (zengYuan.getNb() * sszb) : zyUserCity.getNb() - zengYuan.getNb());
+                update.set("qq", sl ? zyUserCity.getQq() - (int) (zengYuan.getQq() * sszb) : zyUserCity.getQq() - zengYuan.getQq());
+                update.set("zq", sl ? zyUserCity.getZq() - (int) (zengYuan.getZq() * sszb) : zyUserCity.getZq() - zengYuan.getZq());
+                update.set("hq", sl ? zyUserCity.getHq() - (int) (zengYuan.getHq() * sszb) : zyUserCity.getHq() - zengYuan.getHq());
+                update.set("cc", sl ? zyUserCity.getCc() - (int) (zengYuan.getCc() * sszb) : zyUserCity.getCc() - zengYuan.getCc());
+                update.set("tsc", sl ? zyUserCity.getTsc() - (int) (zengYuan.getTsc() * sszb) : zyUserCity.getTsc() - zengYuan.getTsc());
+                update.set("gb", sl ? zyUserCity.getGb() - (int) (zengYuan.getGb() * sszb) : zyUserCity.getGb() - zengYuan.getGb());
+                update.set("ch", sl ? zyUserCity.getCh() - (int) (zengYuan.getCh() * sszb) : zyUserCity.getCh() - zengYuan.getCh());
+                mongoTemplate.updateFirst(zyCityQuery, update, UserCity.class);
+                if (!sl) {
+                    deleteQuery = new Query(Criteria.where("zyId").is(zengYuan.getZyId()));
+                    mongoTemplate.remove(deleteQuery, ZengYuan.class);
+                }
+            }
+        }
+
+    }
+
+    /**
+     * 劫掠资源
+     *
+     * @param userCity
+     * @param yzl
+     * @return
+     */
     public Map<String, Integer> jlzy(UserCity userCity, Integer yzl) {
         int mu = userCity.getMucc() - Ancang.getRongliang(userCity.getAc());
         int shi = userCity.getMucc() - Ancang.getRongliang(userCity.getAc());
@@ -456,6 +689,15 @@ public class ZhanDouService {
         return jlzy(mu, shi, tie, liang, yzl);
     }
 
+    /**
+     * 劫掠资源
+     * @param mu
+     * @param shi
+     * @param tie
+     * @param liang
+     * @param yzl
+     * @return
+     */
     public Map<String, Integer> jlzy(int mu, int shi, int tie, int liang, Integer yzl) {
         Map<String, Integer> jlzy = new HashMap<>();
         int i = 4;
@@ -571,39 +813,34 @@ public class ZhanDouService {
     }
 
     /**
-     * 防守方
-     *
-     * @param chuzheng
-     * @param zb
-     * @return
+     * 防守方和增援方的防守占比计算
      */
-    public Long fyl(Chuzheng chuzheng, UserCity userCity, Map<String, Double> zb, Map<String, Integer> fsbl, Map<String, String> czlb, Map<String, String> wjlb) {
+    public Long fyl(UserCity userCity) {
         long fyzz = 0;//防御总值
-        //每个玩家的防御力
-        Map<String, Long> wjgj = new HashMap<>();
-        Long ccfyl = ccFyl(userCity, chuzheng.getGdUserName(), fsbl, czlb);
-        wjgj.put(userCity.getCityId(), ccfyl);
-        wjlb.put(userCity.getCityId(), userCity.getUserId());
+        //每个增援数据的防御力
+        Map<String, Long> zyfFyl = new HashMap<>();
+        //城池的防御力
+        Long ccfyl = ccFyl(userCity);
         fyzz += ccfyl;
-        Query zyQuery = new Query(Criteria.where("zyCityId").is(chuzheng.getGdCityId()));
-        List<ZengYuan> zengYuans = mongoTemplate.find(zyQuery, ZengYuan.class);
-        if (CollUtil.isNotEmpty(zengYuans)) {
-            for (ZengYuan zengYuan : zengYuans) {
+        Set<String> zengyuanList = zengyuans.keySet();
+        ZengYuan zengYuan = null;
+        if (CollUtil.isNotEmpty(zengyuanList)) {
+            for (String key : zengyuanList) {
+                zengYuan = zengyuans.get(key);
                 Long fyl = zyFyl(zengYuan);
-                wjgj.put(zengYuan.getCityId(), zyFyl(zengYuan));
-                wjlb.put(zengYuan.getCityId(), zengYuan.getUserId());
-                fsbl.put(zengYuan.getCityId(), fsfbl(zengYuan));
-                czlb.put(zengYuan.getCityId(), "防守方" + "-" + zengYuan.getUserId() + "-" + zengYuan.getUserName() + "-" + zengYuan.getCityName());
+                zyfFyl.put(zengYuan.getZyId(), fyl);
                 fyzz += fyl;
             }
         }
         //遍历每个玩家的防御占比
-        Set<String> wjcc = wjgj.keySet();
+        Set<String> wjcc = zyfFyl.keySet();
         for (String key : wjcc) {
             //玩家部队防御
-            Long wjbdfy = wjgj.get(key);
-            zb.put(key, Double.valueOf(String.format("%.2f", wjbdfy / fyzz)));
+            Long wjbdfy = zyfFyl.get(key);
+            zyzb.put(key, Double.valueOf(String.format("%.2f", wjbdfy / fyzz)));
         }
+        fszb = Double.valueOf(String.format("%.2f", ccfyl / fyzz));
+        fszbl = GameUtil.zbl(userCity);
         return fyzz;
     }
 
@@ -613,7 +850,7 @@ public class ZhanDouService {
      * @param userCity
      * @return
      */
-    public Long ccFyl(UserCity userCity, String userName, Map<String, Integer> fsbl, Map<String, String> czlb) {
+    public Long ccFyl(UserCity userCity) {
         //查询武将
         double wljc = 1.0;
         if (!"无".equals(userCity.getCcts())) {
@@ -621,8 +858,8 @@ public class ZhanDouService {
             Wujiang wujiang = mongoTemplate.findOne(wjQuery, Wujiang.class);
             wljc = (wujiang.getFy() + 100) / 100;//攻击加成
         }
-        fsbl.put(userCity.getCityId(), GameUtil.zbl(userCity));
-        czlb.put(userCity.getCityId(), "防守方" + "-" + userCity.getUserId() + "-" + userName + "-" + userCity.getCityName());
+//        fsbl.put(userCity.getCityId(), GameUtil.zbl(userCity));
+//        czlb.put(userCity.getCityId(), "防守方" + "-" + userCity.getUserId() + "-" + userName + "-" + userCity.getCityName());
         long gjl = 0;
         gjl += userCity.getBb() * Bzzy.getFangyu("步兵");
         gjl += userCity.getQb() * Bzzy.getFangyu("枪兵");
