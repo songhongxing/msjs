@@ -15,32 +15,22 @@ import org.springframework.data.mongodb.core.mapping.Field;
 public class ZhanBao {
 
     @Field
-    private String zbId;//战报id
+    private String zbId;//战报id 0
     @Field
-    private String userId;//用户id
+    private String userId;//用户id 1
     @Field
-    private String date;//日期
+    private String date;//日期 2
     @Field
-    private String sf;//胜负
+    private String sf;//胜负 3
     @Field
-    private String zdfs;//战斗方式
+    private String zdfs;//战斗方式 4
     @Field
-    private String xxbt;//消息标题
+    private String xxbt;//消息标题 5
     @Field
-    private String xxnr;//消息内容
+    private String xxnr;//消息内容 6
     @Field
-    private Integer yd = 0;//已读
-    @Field
-    private Integer mu = 0;//木
-    @Field
-    private Integer shi = 0;//石
-    @Field
-    private Integer tie = 0;//铁
-    @Field
-    private Integer liang = 0;//粮
-    @Field
-    private Integer jungong = 0;//军功
-    @Field
-    private Integer fulu = 0;//俘虏
+    private Integer yd = 0;//已读 7
+
+
 
 }

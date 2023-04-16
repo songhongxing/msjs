@@ -27,7 +27,7 @@ public class GameUtil {
         zhl += userCity.getCh() * Bzzy.getHaoliang("斥候");
         zhl += userCity.getZq() * Bzzy.getHaoliang("重骑");
         zhl += userCity.getCc() * Bzzy.getHaoliang("冲车");
-        zhl += userCity.getTsc() * Bzzy.getHaoliang("投石车");
+        zhl += userCity.getTsc() * Bzzy.getHaoliang("投石");
         zhl += userCity.getGb() * Bzzy.getHaoliang("工兵");
         return zhl;
     }

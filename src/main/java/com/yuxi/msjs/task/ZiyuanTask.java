@@ -42,6 +42,7 @@ public class ZiyuanTask {
     @Autowired
     private ZhanDouService zhanDouService;
     private ExecutorService executorService = Executors.newCachedThreadPool();
+    private List<String> lock = new ArrayList<>();
 
     @Scheduled(cron = "0 0/2 * * * ?")
     public void task() {
@@ -208,15 +209,13 @@ public class ZiyuanTask {
      * 处理战斗相关
      */
     @Scheduled(cron = "0/10 * * * * ?")
-    public void zhandou(){
+    public void zhandou() {
         Query jqQuery = new Query(Criteria.where("ddsj").lte(DateUtil.currentSeconds()));
         List<Chuzheng> chuzhengs = mongoTemplate.find(jqQuery, Chuzheng.class);
-        if(CollUtil.isNotEmpty(chuzhengs)){
-            for(Chuzheng chuzheng : chuzhengs){
+        if (CollUtil.isNotEmpty(chuzhengs)) {
+            for (Chuzheng chuzheng : chuzhengs) {
                 ZhanDouThread zhanDouThread = new ZhanDouThread(chuzheng.getCzId(), mongoTemplate, zhanDouService);
                 executorService.execute(zhanDouThread);
-
-
             }
         }
     }
@@ -248,21 +247,21 @@ public class ZiyuanTask {
             Query query = new Query(Criteria.where("czId").is(this.czId));
             Chuzheng chuzheng = mongoTemplate.findOne(query, Chuzheng.class);
             //计算
-            if("歼灭".equals(chuzheng.getCzlx())){
-
-            } else if("建造".equals(chuzheng.getCzlx())){
+            if ("歼灭".equals(chuzheng.getCzlx())) {
+                zhanDouService.zhandou(chuzheng);
+            } else if ("建造".equals(chuzheng.getCzlx())) {
                 zhanDouService.jiancheng(chuzheng);
-            } else if("侦察".equals(chuzheng.getCzlx())){
+            } else if ("侦察".equals(chuzheng.getCzlx())) {
                 zhanDouService.zhencha(chuzheng);
-            } else if("劫掠".equals(chuzheng.getCzlx())){
+            } else if ("劫掠".equals(chuzheng.getCzlx())) {
 
-            } else if("增援".equals(chuzheng.getCzlx())){
+            } else if ("增援".equals(chuzheng.getCzlx())) {
                 zhanDouService.zengyuan(chuzheng);
-            } else if("返回".equals(chuzheng.getCzlx())){
+            } else if ("返回".equals(chuzheng.getCzlx())) {
                 zhanDouService.fanhui(chuzheng);
             }
-
-//            mongoTemplate.remove(query, Chuzheng.class);
+//            lock.remove(chuzheng.getCzId());
+            mongoTemplate.remove(query, Chuzheng.class);
         }
     }
 }

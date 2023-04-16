@@ -1,5 +1,6 @@
 package com.yuxi.msjs.service;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.lang.UUID;
 import cn.hutool.core.map.MapUtil;
@@ -21,11 +22,13 @@ import com.yuxi.msjs.bean.conste.Rongliang;
 import com.yuxi.msjs.bean.conste.Sksj;
 import com.yuxi.msjs.bean.conste.Tksj;
 import com.yuxi.msjs.bean.conste.Tqtsj;
+import com.yuxi.msjs.bean.entity.Chuzheng;
 import com.yuxi.msjs.bean.entity.HomeUp;
 import com.yuxi.msjs.bean.entity.Meinv;
 import com.yuxi.msjs.bean.entity.UserCity;
 import com.yuxi.msjs.bean.entity.UserDaoju;
 import com.yuxi.msjs.bean.entity.Wujiang;
+import com.yuxi.msjs.bean.entity.ZengYuan;
 import com.yuxi.msjs.bean.entity.ZhengBing;
 import com.yuxi.msjs.bean.vo.CityList;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -97,9 +100,44 @@ public class CityService {
      * @return
      */
     public UserCity userCity(String cityId) {
-        Query query = new Query();
-        query.addCriteria(Criteria.where("cityId").is(cityId));
-        return mongoTemplate.findOne(query, UserCity.class);
+        Query query = new Query(Criteria.where("cityId").is(cityId));
+        //用户的兵力减去出征的兵力
+        UserCity userCity = mongoTemplate.findOne(query, UserCity.class);
+        query = new Query(Criteria.where("czCityId").is(cityId));
+        List<Chuzheng> chuzhengs = mongoTemplate.find(query, Chuzheng.class);
+        if (CollUtil.isNotEmpty(chuzhengs)) {
+            for (Chuzheng chuzheng : chuzhengs) {
+                userCity.setBb(userCity.getBb() - chuzheng.getBb());
+                userCity.setQb(userCity.getQb() - chuzheng.getQb());
+                userCity.setNb(userCity.getNb() - chuzheng.getNb());
+                userCity.setQq(userCity.getQq() - chuzheng.getQq());
+                userCity.setHq(userCity.getHq() - chuzheng.getHq());
+                userCity.setZq(userCity.getZq() - chuzheng.getZq());
+                userCity.setCc(userCity.getCc() - chuzheng.getCc());
+                userCity.setCh(userCity.getCh() - chuzheng.getCh());
+                userCity.setGb(userCity.getGb() - chuzheng.getGb());
+                userCity.setTsc(userCity.getTsc() - chuzheng.getTsc());
+
+            }
+        }
+        query = new Query(Criteria.where("cityId").is(cityId));
+        List<ZengYuan> zengYuans = mongoTemplate.find(query, ZengYuan.class);
+        if (CollUtil.isNotEmpty(zengYuans)) {
+            for (ZengYuan zengyuan : zengYuans) {
+                userCity.setBb(userCity.getBb() - zengyuan.getBb());
+                userCity.setQb(userCity.getQb() - zengyuan.getQb());
+                userCity.setNb(userCity.getNb() - zengyuan.getNb());
+                userCity.setQq(userCity.getQq() - zengyuan.getQq());
+                userCity.setHq(userCity.getHq() - zengyuan.getHq());
+                userCity.setZq(userCity.getZq() - zengyuan.getZq());
+                userCity.setCc(userCity.getCc() - zengyuan.getCc());
+                userCity.setCh(userCity.getCh() - zengyuan.getCh());
+                userCity.setGb(userCity.getGb() - zengyuan.getGb());
+                userCity.setTsc(userCity.getTsc() - zengyuan.getTsc());
+            }
+        }
+
+        return userCity;
     }
 
     /**
@@ -408,7 +446,7 @@ public class CityService {
     public List<Wujiang> wjlb(String cityId, Integer czzt){
         Query query = new Query(Criteria.where("cityId").is(cityId));
         if(czzt == 1){
-            query.addCriteria(Criteria.where("czzt").is(0));
+            query.addCriteria(Criteria.where("czzt").is(0).and("lwzt").is(0));
             query.with(Sort.by(Sort.Order.desc("wl")));
         }
         return  mongoTemplate.find(query, Wujiang.class);
@@ -783,7 +821,6 @@ public class CityService {
      *
      * @param cityId
      * @param name
-     * @param gz
      * @return
      */
     public List<Meinv> jiechumv(String cityId, String name) {

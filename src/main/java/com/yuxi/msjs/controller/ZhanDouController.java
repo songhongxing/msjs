@@ -3,6 +3,8 @@ package com.yuxi.msjs.controller;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import com.yuxi.msjs.bean.entity.Chuzheng;
+import com.yuxi.msjs.bean.entity.Xtxx;
+import com.yuxi.msjs.bean.entity.ZhanBao;
 import com.yuxi.msjs.service.ZhanDouService;
 import com.yuxi.msjs.util.HjArray;
 import com.yuxi.msjs.util.HjDict;
@@ -46,6 +48,26 @@ public class ZhanDouController extends BaseController{
     public HjDict junqing(String userId){
         Map junqing = zhanDouService.junqing(userId);
         return arrayUtil.toDict(junqing);
+    }
+
+    /**
+     * 战报列表
+     * @param userId
+     * @return
+     */
+    @GetMapping("/zblb")
+    public HjArray zblb(String userId){
+        List<ZhanBao> zhanBaos = zhanDouService.zblb(userId);
+        return arrayUtil.toArray(zhanBaos, zhanBaos.size(), ZhanBao.class);
+    }
+
+    /**
+     * 读取战报
+     * @param zbId
+     */
+    @GetMapping("/zbyd")
+    public void zbyd(String zbId){
+        zhanDouService.zbyd(zbId);
     }
 
     @GetMapping("/jqlb")
