@@ -1,5 +1,6 @@
 package com.yuxi.msjs.controller;
 
+import cn.hutool.core.collection.ListUtil;
 import cn.hutool.json.JSONUtil;
 import com.yuxi.msjs.bean.entity.UserDaoju;
 import com.yuxi.msjs.bean.entity.UserZb;
@@ -42,7 +43,7 @@ public class DaojuController extends BaseController {
     @PostMapping("/create")
     public HjArray insert(String json) {
         UserDaoju userDaoju = JSONUtil.toBean(JSONUtil.parseObj(json), UserDaoju.class);
-        List<UserDaoju> daojuList = daojuService.insert(userDaoju);
+        List<UserDaoju> daojuList = daojuService.insert(ListUtil.toList(userDaoju));
         return arrayUtil.toArray(daojuList, daojuList.size(), UserDaoju.class);
     }
 

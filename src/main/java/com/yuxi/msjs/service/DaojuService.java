@@ -27,21 +27,24 @@ public class DaojuService {
     private MongoTemplate mongoTemplate;
 
 
-    public List<UserDaoju> insert(UserDaoju userDaoju){
+    public List<UserDaoju> insert(List<UserDaoju> userDaojus){
+        Query query;
         //判断这个用户有没有这个道具,有的话就+1
-        Query query = new Query(Criteria.where("userId").is(userDaoju.getUserId()).and("name").is(userDaoju.getName()));
-        userDaoju.setMiaoshu(Daoju.getMiaoshuz(userDaoju.getName()));
-        userDaoju.setKsy(Daoju.getKsyz(userDaoju.getName()));
-        UserDaoju daoju = mongoTemplate.findOne(query, UserDaoju.class);
-        if(daoju == null){
-            mongoTemplate.save(userDaoju);
-        } else {
-            Update update = new Update();
-            update.set("sl", daoju.getSl() + userDaoju.getSl());
-            mongoTemplate.updateFirst(query, update, UserDaoju.class);
+        for(UserDaoju userDaoju : userDaojus){
+            query = new Query(Criteria.where("userId").is(userDaoju.getUserId()).and("name").is(userDaoju.getName()));
+            userDaoju.setMiaoshu(Daoju.getMiaoshuz(userDaoju.getName()));
+            userDaoju.setKsy(Daoju.getKsyz(userDaoju.getName()));
+            UserDaoju daoju = mongoTemplate.findOne(query, UserDaoju.class);
+            if(daoju == null){
+                mongoTemplate.save(userDaoju);
+            } else {
+                Update update = new Update();
+                update.set("sl", daoju.getSl() + userDaoju.getSl());
+                mongoTemplate.updateFirst(query, update, UserDaoju.class);
+            }
         }
-        query = new Query(Criteria.where("userId").is(userDaoju.getUserId()));
-        List<UserDaoju> userDaojus = mongoTemplate.find(query, UserDaoju.class);
+        query = new Query(Criteria.where("userId").is(userDaojus.get(0).getUserId()));
+        userDaojus = mongoTemplate.find(query, UserDaoju.class);
         return userDaojus;
     }
 

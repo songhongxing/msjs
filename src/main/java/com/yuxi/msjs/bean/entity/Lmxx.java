@@ -5,6 +5,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
 /**
+ * 联盟聊天消息
  * @author songhongxing
  * @date 2023/03/09 11:43 上午
  */

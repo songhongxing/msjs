@@ -1,6 +1,7 @@
 package com.yuxi.msjs.bean.entity;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
@@ -12,6 +13,7 @@ import org.springframework.data.mongodb.core.mapping.Field;
  */
 @Data
 @Document("daoju")
+@NoArgsConstructor
 public class UserDaoju {
 
     @Field
@@ -24,4 +26,10 @@ public class UserDaoju {
     private Integer sl;//数量
     @Field
     private Integer ksy;//可在背包界面使用
+
+    public UserDaoju(String userId, String name, Integer sl) {
+        this.userId = userId;
+        this.name = name;
+        this.sl = sl;
+    }
 }

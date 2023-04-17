@@ -4,6 +4,7 @@ import cn.hutool.core.collection.ListUtil;
 import com.yuxi.msjs.bean.entity.Xtxx;
 import com.yuxi.msjs.service.XtxxService;
 import com.yuxi.msjs.util.HjArray;
+import com.yuxi.msjs.util.HjDict;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * .
@@ -46,5 +48,12 @@ public class XxController extends BaseController {
         xxlb = ListUtil.reverse(xxlb);
         return arrayUtil.toArray(xxlb, xxlb.size(), Xtxx.class);
     }
+
+    @GetMapping("/wdxx")
+    public HjDict wdxx(String userId){
+        Map<String, Long> wdxx = xtxxService.wdxx(userId);
+        return arrayUtil.toDict(wdxx);
+    }
+
 
 }

@@ -48,7 +48,8 @@ public class User {
     private String junxian = "五等校尉"; //16
     @Field
     private Integer jungong = 0;//军工 17
-
+    @Field
+    private Integer lmmc = 0;//联盟名称 18
 
 
 

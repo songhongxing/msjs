@@ -4,6 +4,9 @@ import lombok.Data;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
+/**
+ * 联盟申请
+ */
 @Data
 @Document("lmsq")
 public class Lmsq {

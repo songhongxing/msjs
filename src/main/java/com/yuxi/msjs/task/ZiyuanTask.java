@@ -248,7 +248,7 @@ public class ZiyuanTask {
             Chuzheng chuzheng = mongoTemplate.findOne(query, Chuzheng.class);
             //计算
             if ("歼灭".equals(chuzheng.getCzlx())) {
-                zhanDouService.zhandou(chuzheng);
+                zhanDouService.jianmie(chuzheng);
             } else if ("建造".equals(chuzheng.getCzlx())) {
                 zhanDouService.jiancheng(chuzheng);
             } else if ("侦察".equals(chuzheng.getCzlx())) {

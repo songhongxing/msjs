@@ -2,11 +2,13 @@ package com.yuxi.msjs.service;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.StrUtil;
 import com.yuxi.msjs.bean.conste.Ancang;
 import com.yuxi.msjs.bean.conste.Bzzy;
 import com.yuxi.msjs.bean.conste.Chanliang;
 import com.yuxi.msjs.bean.conste.Rongliang;
 import com.yuxi.msjs.bean.entity.Chuzheng;
+import com.yuxi.msjs.bean.entity.SlgMap;
 import com.yuxi.msjs.bean.entity.User;
 import com.yuxi.msjs.bean.entity.UserCity;
 import com.yuxi.msjs.bean.entity.Wujiang;
@@ -217,7 +219,70 @@ public class ZhanDouService {
      *
      * @param chuzheng
      */
-    public void zhandou(Chuzheng chuzheng) {
+    public void jianmie(Chuzheng chuzheng) {
+        if (StrUtil.isEmpty(chuzheng.getGdUserId())) {
+            //是npc,就查询这个坐标的等级,胜利后占领土地
+            jianlieNPC(chuzheng);
+        } else {
+            jianmieWJ(chuzheng);
+        }
+    }
+
+    /**
+     * 劫掠模式
+     *
+     * @param chuzheng
+     */
+    public void jielue(Chuzheng chuzheng) {
+
+        if (StrUtil.isEmpty(chuzheng.getGdUserId())) {
+            //是npc,就查询这个坐标的等级,胜利后占领土地
+            jianlieNPC(chuzheng);
+        } else {
+            jianmieWJ(chuzheng);
+        }
+    }
+
+    public void jianlieNPC(Chuzheng chuzheng) {
+        zengyuans.clear();
+        zyzb.clear();
+        zyblzs.clear();
+        czwj.clear();
+        wjjy.clear();
+        wjjgfl.clear();
+        Query query = new Query(Criteria.where("id").is(chuzheng.getGdZb()));
+        SlgMap slgMap = mongoTemplate.findOne(query, SlgMap.class);
+        //计算攻击方的攻击总值
+        Long gjl = gjl(chuzheng);
+        //计算防守方的防御总值和防守方玩家的百分比
+        Long fyl = (long) slgMap.getDksj() * Bzzy.getFangyu(slgMap.getSjlx());
+        //计算双方实力差距
+        if (gjl > fyl) {
+            query = new Query(Criteria.where("id").is(chuzheng.getCzCityId()));
+            UserCity userCity = mongoTemplate.findOne(query, UserCity.class);
+            double slcj = new BigDecimal(gjl).divide(new BigDecimal(fyl), 2, BigDecimal.ROUND_HALF_UP).doubleValue();
+            gjl = (long) (gjl * slcj);
+            double sszb = new BigDecimal(gjl - fyl).divide(new BigDecimal(gjl), 2, BigDecimal.ROUND_HALF_UP).doubleValue();
+            gjfsy(sszb, chuzheng);
+            wjjy.put(chuzheng.getCzWjId(), slgMap.getDksj() + ",0");
+            zjwjjy();
+            query = new Query(Criteria.where("id").is(chuzheng.getCzUserId()));
+            User user = mongoTemplate.findOne(query, User.class);
+            Update update = new Update();
+            update.set("sswjId", user.getUserId());
+            update.set("sswjName", user.getName());
+            update.set("lmId", user.getLmId());
+            update.set("lmmc", user.getLmmc());
+            update.set("cityId", chuzheng.getCzCityId());
+            mongoTemplate.updateFirst(query, update, SlgMap.class);
+        } else {
+            double slcj = new BigDecimal(fyl).divide(new BigDecimal(gjl), 2, BigDecimal.ROUND_HALF_UP).doubleValue();
+        }
+
+
+    }
+
+    public void jianmieWJ(Chuzheng chuzheng) {
         zengyuans.clear();
         zyzb.clear();
         zyblzs.clear();
@@ -265,10 +330,11 @@ public class ZhanDouService {
             gjl = (long) (gjl * slcj);
             //获取损失的百分比
             double sszb = 0;
-            if(fyl != 0){
+            if (fyl != 0) {
                 sszb = new BigDecimal(gjl - fyl).divide(new BigDecimal(gjl), 2, BigDecimal.ROUND_HALF_UP).doubleValue();
             }
-            jlzy = gjfsy(sszb, chuzheng, userCity);
+            gjfsy(sszb, chuzheng);
+            jlzy = jlzy(sszb, chuzheng, userCity);
             //计算攻击方剩余兵力
             int gjfsy = (int) (gjfbl * sszb);
             fsfsy(1, userCity, false);
@@ -283,7 +349,8 @@ public class ZhanDouService {
             slcj = 1 + slcj / 20;
             fyl = (long) (fyl * slcj);
             //获取损失的百分比
-            jlzy = gjfsy(1, chuzheng, userCity);
+            gjfsy(1, chuzheng);
+            jlzy = jlzy(1, chuzheng, userCity);
             BigDecimal divide = new BigDecimal(fyl - gjl).divide(new BigDecimal(fyl), 2, BigDecimal.ROUND_HALF_UP);
             double sszb = divide.doubleValue();
             //计算防守方剩余兵力
@@ -331,6 +398,7 @@ public class ZhanDouService {
             zhanBao.setZbId(UUID.randomUUID().toString().replaceAll("-", ""));
             zhanBao.setUserId(userId);
             zhanBao.setDate(DateUtil.now());
+            zhanBao.setZdfs(chuzheng.getCzlx());
             zhanBao.setSf(slf);
             zhanBao.setXxbt(chuzheng.getCzCityName() + "攻打" + chuzheng.getGdCityName() + "战报");
             zhanBao.setXxnr(zbnr);
@@ -601,9 +669,9 @@ public class ZhanDouService {
      * @author songhongxing
      * @date 2023/04/13 9:54 上午
      */
-    public Map<String, Integer> gjfsy(double sszb, Chuzheng chuzheng, UserCity userCity) {
+    public void gjfsy(double sszb, Chuzheng chuzheng) {
         Map<String, Integer> jlzy;
-        if(sszb != 0){
+        if (sszb != 0) {
             int bb = sszb < 1 ? (int) (chuzheng.getBb() * sszb) : 0;
             int qb = sszb < 1 ? (int) (chuzheng.getQb() * sszb) : 0;
             int nb = sszb < 1 ? (int) (chuzheng.getNb() * sszb) : 0;
@@ -629,15 +697,17 @@ public class ZhanDouService {
             chuzheng.setZq(zq);
             chuzheng.setCc(cc);
             chuzheng.setTsc(tsc);
-            jlzy = jlzy(userCity, zyz(bb, qb, nb, qq, hq, zq));
-        } else {
-            jlzy = jlzy(userCity, zyz(chuzheng.getBb(), chuzheng.getQq(), chuzheng.getNb(), chuzheng.getQb(), chuzheng.getHq(), chuzheng.getZq()));
         }
-        return jlzy;
+    }
+
+    public Map<String, Integer> jlzy(double sszb, Chuzheng chuzheng, UserCity userCity) {
+        return jlzy(userCity, zyz(chuzheng.getBb(), chuzheng.getQq(), chuzheng.getNb(), chuzheng.getQb(), chuzheng.getHq(), chuzheng.getZq()));
+
     }
 
     /**
      * 兵力回到城市
+     *
      * @param chuzheng
      * @return
      */
@@ -952,35 +1022,72 @@ public class ZhanDouService {
     }
 
 
-
     /**
      * 建造分城
+     *
      * @param chuzheng
      */
-    public void jiancheng(Chuzheng chuzheng){
-        cityService.createCity(chuzheng.getCzUserId(),chuzheng.getCzUserName()+"分城", chuzheng.getCzZb());
+    public void jiancheng(Chuzheng chuzheng) {
+        cityService.createCity(chuzheng.getCzUserId(), "新的城市", chuzheng.getCzZb());
         //发系统消息
         ZhanBao zhanBao = new ZhanBao();
         zhanBao.setZbId(UUID.randomUUID().toString().replaceAll("-", ""));
         zhanBao.setUserId(chuzheng.getCzUserId());
+        zhanBao.setZdfs(chuzheng.getCzlx());
         zhanBao.setXxbt("分城建造完成");
-        zhanBao.setXxnr("工兵在"+chuzheng.getCzZb()+"坐标处建造一座分城，请主公前往。");
+        zhanBao.setDate(DateUtil.now());
+        zhanBao.setXxnr("工兵在" + chuzheng.getCzZb() + "坐标处建造一座分城，请主公前往。");
         mongoTemplate.save(zhanBao);
     }
 
     /**
      * 侦察
+     *
      * @param chuzheng
      */
-    public void zhencha(Chuzheng chuzheng){
+    public void zhencha(Chuzheng chuzheng) {
         Query query = new Query(Criteria.where("userId").is(chuzheng.getGdUserId()));
         UserCity userCity = mongoTemplate.findOne(query, UserCity.class);
         //发系统消息
         ZhanBao zhanBao = new ZhanBao();
         zhanBao.setZbId(UUID.randomUUID().toString().replaceAll("-", ""));
         zhanBao.setUserId(chuzheng.getCzUserId());
-        zhanBao.setXxbt("侦察完成");
-        zhanBao.setXxnr("这是一封侦察内容");
+        zhanBao.setDate(DateUtil.now());
+        zhanBao.setZdfs(chuzheng.getCzlx());
+        zhanBao.setSf("攻方胜");
+        zhanBao.setXxbt("侦察" + chuzheng.getCzCityName() + "战报");
+        StringBuffer zbnr = new StringBuffer();
+
+        zbnr.append("城市名:" + userCity.getCityName() + "<br/> <br/>");
+        if (userCity.getBb() > 0) {
+            zbnr.append("步兵:" + userCity.getBb() + "<br/>");
+        }
+        if (userCity.getQb() > 0) {
+            zbnr.append("枪兵:" + userCity.getQb() + "<br/>");
+        }
+        if (userCity.getNb() > 0) {
+            zbnr.append("弩兵:" + userCity.getNb() + "<br/>");
+        }
+        if (userCity.getQq() > 0) {
+            zbnr.append("轻骑:" + userCity.getQq() + "<br/>");
+        }
+        if (userCity.getHq() > 0) {
+            zbnr.append("虎骑:" + userCity.getHq() + "<br/>");
+        }
+        if (userCity.getZq() > 0) {
+            zbnr.append("重骑:" + userCity.getZq() + "<br/>");
+        }
+        if (userCity.getCh() > 0) {
+            zbnr.append("斥候:" + userCity.getCh() + "<br/>");
+        }
+        if (userCity.getCc() > 0) {
+            zbnr.append("冲车:" + userCity.getCc() + "<br/>");
+        }
+        if (userCity.getTsc() > 0) {
+            zbnr.append("投石车:" + userCity.getTsc() + "<br/>");
+        }
+        zbnr.append("资源:木" + userCity.getMucc() + ",石" + userCity.getShicc() + ",铁" + userCity.getTiecc() + ",粮" + userCity.getLiangcc());
+        zhanBao.setXxnr(zbnr.toString());
         mongoTemplate.save(zhanBao);
     }
 
@@ -1006,47 +1113,47 @@ public class ZhanDouService {
         zengYuan.setCc(chuzheng.getCc());
         zengYuan.setTsc(chuzheng.getTsc());
         zengYuan.setGb(chuzheng.getGb());
-        Integer zhl = zhl(zengYuan);
+        zengYuan.setXjsj(chuzheng.getXjsj());
         Query query = new Query(Criteria.where("cityId").is(chuzheng.getGdCityId()));
-        UserCity userCity = mongoTemplate.findOne(query, UserCity.class);
         Update update = new Update();
-        update.set("zhl", userCity.getZbl() + zhl);
+        update.set("zhl", cityZhl(chuzheng.getGdCityId()));
         mongoTemplate.updateFirst(query, update, UserCity.class);
         //发系统消息
         ZhanBao zhanBao = new ZhanBao();
         zhanBao.setZbId(UUID.randomUUID().toString().replaceAll("-", ""));
         zhanBao.setUserId(chuzheng.getGdUserId());
         zhanBao.setXxbt("增援到达");
-        zhanBao.setXxnr(chuzheng.getCzUserName()+"玩家增援的兵力到达,请主公前往查看。");
+        zhanBao.setXxnr(chuzheng.getCzUserName() + "的增援的兵力已到达" + chuzheng.getGdCityName() + "城池,请主公前往查看。");
         mongoTemplate.save(zhanBao);
         zhanBao = new ZhanBao();
         zhanBao.setZbId(UUID.randomUUID().toString().replaceAll("-", ""));
         zhanBao.setUserId(chuzheng.getCzUserId());
         zhanBao.setXxbt("增援到达");
-        zhanBao.setXxnr("增援的兵力已到达"+chuzheng.getCzUserName()+"的城池,请主公前往查看。");
+        zhanBao.setXxnr(chuzheng.getCzUserName() + "的增援的兵力已到达" + chuzheng.getGdCityName() + "城池,请主公前往查看。");
         mongoTemplate.save(zhanBao);
     }
 
-
     /**
-     * 计算增援耗粮
-     * @param zengyuan
+     * 计算城市总耗粮
+     *
+     * @param cityId
      * @return
      */
-    public Integer zhl(ZengYuan zengyuan){
+    public Integer cityZhl(String cityId) {
         Integer zhl = 0;
-        zhl += zengyuan.getBb() * Bzzy.getHaoliang("步兵");
-        zhl += zengyuan.getQb() * Bzzy.getHaoliang("枪兵");
-        zhl += zengyuan.getNb() * Bzzy.getHaoliang("弩兵");
-        zhl += zengyuan.getQq() * Bzzy.getHaoliang("轻骑");
-        zhl += zengyuan.getHq() * Bzzy.getHaoliang("虎骑");
-        zhl += zengyuan.getCh() * Bzzy.getHaoliang("斥候");
-        zhl += zengyuan.getZq() * Bzzy.getHaoliang("重骑");
-        zhl += zengyuan.getCc() * Bzzy.getHaoliang("冲车");
-        zhl += zengyuan.getTsc() * Bzzy.getHaoliang("投石车");
-        zhl += zengyuan.getGb() * Bzzy.getHaoliang("工兵");
-        return zhl * 2;
+        Query query = new Query(Criteria.where("cityId").is(cityId));
+        UserCity userCity = mongoTemplate.findOne(query, UserCity.class);
+        zhl += GameUtil.zhl(userCity);
+        query = new Query(Criteria.where("zyCityId").is(cityId));
+        List<ZengYuan> zengYuans = mongoTemplate.find(query, ZengYuan.class);
+        if (CollUtil.isNotEmpty(zengYuans)) {
+            for (ZengYuan zengYuan : zengYuans) {
+                zhl += GameUtil.zyzhl(zengYuan);
+            }
+        }
+        return zhl;
     }
+
 
     public List<ZhanBao> zblb(String userId) {
         Query query = new Query(Criteria.where("userId").is(userId));
@@ -1060,5 +1167,53 @@ public class ZhanDouService {
         Update update = new Update();
         update.set("yd", 1);
         mongoTemplate.updateFirst(query, update, ZhanBao.class);
+    }
+
+    /**
+     * 部队召回
+     *
+     * @param zyId
+     * @return
+     */
+    public void bdzh(String zyId) {
+        Query query = new Query(Criteria.where("zyId").is(zyId));
+        ZengYuan zengYuan = mongoTemplate.findOne(query, ZengYuan.class);
+        Chuzheng chuzheng = new Chuzheng();
+        chuzheng.setCzId(UUID.randomUUID().toString().replaceAll("-", ""));
+        chuzheng.setCzUserId(zengYuan.getUserId());
+        chuzheng.setCzUserName(zengYuan.getUserName());
+        chuzheng.setCzCityId(zengYuan.getCityId());
+        chuzheng.setCzZb(0);
+        chuzheng.setCzlx("返回");
+        chuzheng.setCzWjId(zengYuan.getCzWj());
+        chuzheng.setDdsj((int) (DateUtil.currentSeconds() + zengYuan.getXjsj()));
+        chuzheng.setBb(zengYuan.getBb());
+        chuzheng.setQb(zengYuan.getQb());
+        chuzheng.setNb(zengYuan.getNb());
+        chuzheng.setQq(zengYuan.getQq());
+        chuzheng.setHq(zengYuan.getHq());
+        chuzheng.setZq(zengYuan.getZq());
+        chuzheng.setCh(zengYuan.getCh());
+        chuzheng.setCc(zengYuan.getCc());
+        chuzheng.setTsc(zengYuan.getTsc());
+        chuzheng.setGb(zengYuan.getGb());
+        chuzheng.setXjsj(zengYuan.getXjsj());
+        mongoTemplate.save(chuzheng);
+        mongoTemplate.remove(query, ZengYuan.class);
+        Integer zhl = cityZhl(zengYuan.getZyCityId());
+        Update update = new Update();
+        update.set("zhl", zhl);
+        query = new Query(Criteria.where("cityId").is(zengYuan.getZyCityId()));
+        mongoTemplate.updateFirst(query, update, UserCity.class);
+    }
+
+    public List<ZengYuan> zywd(String userId) {
+        Query query = new Query(Criteria.where("zyUserId").is(userId));
+        return mongoTemplate.find(query, ZengYuan.class);
+    }
+
+    public List<ZengYuan> wzyd(String userId) {
+        Query query = new Query(Criteria.where("userId").is(userId));
+        return mongoTemplate.find(query, ZengYuan.class);
     }
 }

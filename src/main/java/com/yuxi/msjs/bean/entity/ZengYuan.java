@@ -50,5 +50,7 @@ public class ZengYuan {
     private Integer tsc = 0;//投石车 31
     @Field
     private Integer gb = 0;//工兵 32
+    @Field
+    private Integer xjsj = 0;//行军时间 33
 
 }
