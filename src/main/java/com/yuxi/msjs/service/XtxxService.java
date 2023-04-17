@@ -90,10 +90,11 @@ public class XtxxService {
      */
     public Map<String, Long> wdxx(String userId) {
         Map<String, Long> map = new HashMap<>();
-        Query query = new Query(Criteria.where("userId").is(userId));
+        Query query = new Query(Criteria.where("userId").is(userId).and("yd").is(0));
         long count = mongoTemplate.count(query, ZhanBao.class);
         map.put("战报", count);
         List<Xtxx> xtxxes = mongoTemplate.findAll(Xtxx.class);
+        query = new Query(Criteria.where("userId").is(userId));
         List<Ydxx> ydxxes = mongoTemplate.find(query, Ydxx.class);
         if (CollUtil.isNotEmpty(ydxxes)) {
             List<String> collect = ydxxes.stream().map(Ydxx::getXxId).collect(Collectors.toList());

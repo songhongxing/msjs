@@ -1,6 +1,7 @@
 package com.yuxi.msjs.service;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.StrUtil;
 import com.yuxi.msjs.bean.conste.Ancang;
@@ -235,12 +236,6 @@ public class ZhanDouService {
      */
     public void jielue(Chuzheng chuzheng) {
 
-        if (StrUtil.isEmpty(chuzheng.getGdUserId())) {
-            //是npc,就查询这个坐标的等级,胜利后占领土地
-            jianlieNPC(chuzheng);
-        } else {
-            jianmieWJ(chuzheng);
-        }
     }
 
     public void jianlieNPC(Chuzheng chuzheng) {
@@ -256,30 +251,74 @@ public class ZhanDouService {
         Long gjl = gjl(chuzheng);
         //计算防守方的防御总值和防守方玩家的百分比
         Long fyl = (long) slgMap.getDksj() * Bzzy.getFangyu(slgMap.getSjlx());
+        int gjzbl = gjfbl(chuzheng);
         //计算双方实力差距
         if (gjl > fyl) {
-            query = new Query(Criteria.where("id").is(chuzheng.getCzCityId()));
+            query = new Query(Criteria.where("cityId").is(chuzheng.getCzCityId()));
             UserCity userCity = mongoTemplate.findOne(query, UserCity.class);
-            double slcj = new BigDecimal(gjl).divide(new BigDecimal(fyl), 2, BigDecimal.ROUND_HALF_UP).doubleValue();
-            gjl = (long) (gjl * slcj);
             double sszb = new BigDecimal(gjl - fyl).divide(new BigDecimal(gjl), 2, BigDecimal.ROUND_HALF_UP).doubleValue();
-            gjfsy(sszb, chuzheng);
+            sszb = sszb == 1 ? 0 : sszb;
+            int gjfsy = gjfsy(sszb, chuzheng);
             wjjy.put(chuzheng.getCzWjId(), slgMap.getDksj() + ",0");
-            zjwjjy();
-            query = new Query(Criteria.where("id").is(chuzheng.getCzUserId()));
+            query = new Query(Criteria.where("userId").is(chuzheng.getCzUserId()));
             User user = mongoTemplate.findOne(query, User.class);
-            Update update = new Update();
-            update.set("sswjId", user.getUserId());
-            update.set("sswjName", user.getName());
-            update.set("lmId", user.getLmId());
-            update.set("lmmc", user.getLmmc());
-            update.set("cityId", chuzheng.getCzCityId());
-            mongoTemplate.updateFirst(query, update, SlgMap.class);
+            //查询玩家的内政厅等级和资源田数量
+            query = new Query(Criteria.where("sswjId").is(chuzheng.getCzCityId()).and("dklx").in(ListUtil.toList("农田","林场","石矿","铁矿")));
+            List<SlgMap> slgMaps = mongoTemplate.find(query, SlgMap.class);
+            int zysx = (int)(userCity.getNzt() / 5) +1;
+            //有空闲格子得时候，可以占领这个资源田
+            if(zysx > slgMaps.size()){
+                Update update = new Update();
+                update.set("sswjId", user.getUserId());
+                update.set("sswjName", user.getName());
+                update.set("lmId", user.getLmId());
+                update.set("lmmc", user.getLmmc());
+                update.set("cityId", chuzheng.getCzCityId());
+                query = new Query(Criteria.where("id").is(chuzheng.getGdZb()));
+                mongoTemplate.updateFirst(query, update, SlgMap.class);
+            }
+            String npczb = npczb(chuzheng, slgMap, gjfsy, gjzbl,0);
+            ZhanBao zhanBao = new ZhanBao();
+            zhanBao.setZbId(UUID.randomUUID().toString().replaceAll("-", ""));
+            zhanBao.setUserId(chuzheng.getCzUserId());
+            zhanBao.setDate(DateUtil.now());
+            zhanBao.setZdfs(chuzheng.getCzlx());
+            zhanBao.setSf("守方胜");
+            zhanBao.setXxbt(chuzheng.getCzCityName() + "攻打" + chuzheng.getGdUserName() + "战报");
+            zhanBao.setXxnr(npczb);
+            mongoTemplate.save(zhanBao);
+            Chuzheng fanhui = new Chuzheng();
+            BeanUtils.copyProperties(chuzheng, fanhui);
+            fanhui.setCzId(UUID.randomUUID().toString().replaceAll("-", ""));
+            fanhui.setDdsj((int) (DateUtil.currentSeconds() + chuzheng.getXjsj()));
+            fanhui.setCzlx("返回");
+            mongoTemplate.save(fanhui);
         } else {
-            double slcj = new BigDecimal(fyl).divide(new BigDecimal(gjl), 2, BigDecimal.ROUND_HALF_UP).doubleValue();
+            double sszb = new BigDecimal(fyl - gjl).divide(new BigDecimal(fyl), 2, BigDecimal.ROUND_HALF_UP).doubleValue();
+            gjfsy(1, chuzheng);
+            wjjy.put(chuzheng.getCzWjId(),(int) (slgMap.getDksj() - slgMap.getDksj() * sszb) + ",1");
+            String npczb = npczb(chuzheng, slgMap, 0, gjzbl,(int)(slgMap.getDksj() * sszb));
+            ZhanBao zhanBao = new ZhanBao();
+            zhanBao.setZbId(UUID.randomUUID().toString().replaceAll("-", ""));
+            zhanBao.setUserId(chuzheng.getCzUserId());
+            zhanBao.setDate(DateUtil.now());
+            zhanBao.setZdfs(chuzheng.getCzlx());
+            zhanBao.setSf("守方胜");
+            zhanBao.setXxbt(chuzheng.getCzCityName() + "攻打" + chuzheng.getGdUserName() + "战报");
+            zhanBao.setXxnr(npczb);
+            mongoTemplate.save(zhanBao);
         }
+        zjwjjy();
 
+    }
 
+    public String npczb(Chuzheng chuzheng, SlgMap slgMap, Integer gjfsy,Integer gjzbl, Integer fsfsy){
+        StringBuffer sb = new StringBuffer();
+        sb.append("攻击方："+chuzheng.getCzUserName()+"-"+chuzheng.getCzCityName()+"<br/>");
+        sb.append("剩余兵力："+gjfsy+"/"+gjzbl+"<br/> <br/>");
+        sb.append("防守方："+slgMap.getDkmc()+"-"+slgMap.getDkdj()+"级<br/>");
+        sb.append("剩余兵力："+fsfsy+"/"+slgMap.getDksj()+"<br/>");
+        return sb.toString();
     }
 
     public void jianmieWJ(Chuzheng chuzheng) {
@@ -669,8 +708,8 @@ public class ZhanDouService {
      * @author songhongxing
      * @date 2023/04/13 9:54 上午
      */
-    public void gjfsy(double sszb, Chuzheng chuzheng) {
-        Map<String, Integer> jlzy;
+    public Integer gjfsy(double sszb, Chuzheng chuzheng) {
+        int gjfsy= 0;
         if (sszb != 0) {
             int bb = sszb < 1 ? (int) (chuzheng.getBb() * sszb) : 0;
             int qb = sszb < 1 ? (int) (chuzheng.getQb() * sszb) : 0;
@@ -697,7 +736,11 @@ public class ZhanDouService {
             chuzheng.setZq(zq);
             chuzheng.setCc(cc);
             chuzheng.setTsc(tsc);
+            gjfsy = bb + qb + nb + qq+hq+zq + cc + tsc;
+        } else {
+            gjfsy = gjfbl(chuzheng);
         }
+        return gjfsy;
     }
 
     public Map<String, Integer> jlzy(double sszb, Chuzheng chuzheng, UserCity userCity) {
