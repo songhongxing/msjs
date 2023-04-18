@@ -49,7 +49,7 @@ public class UserController extends BaseController{
     public HjDict userInfo(String userId){
         User user = userService.findById(userId);
         user.setDlsj(DateUtil.now());
-        user.setSjhms(System.currentTimeMillis());
+        user.setSjms((int)DateUtil.currentSeconds());
         Map<String, Object> userMap = BeanUtil.beanToMap(user);
         return arrayUtil.toDict(userMap);
     }

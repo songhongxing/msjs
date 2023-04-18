@@ -3,6 +3,7 @@ package com.yuxi.msjs.controller;
 import cn.hutool.core.bean.BeanUtil;
 import com.yuxi.msjs.bean.entity.HomeUp;
 import com.yuxi.msjs.bean.entity.Meinv;
+import com.yuxi.msjs.bean.entity.SlgMap;
 import com.yuxi.msjs.bean.entity.UserCity;
 import com.yuxi.msjs.bean.entity.Wujiang;
 import com.yuxi.msjs.bean.entity.ZhengBing;
@@ -99,8 +100,8 @@ public class CityController extends BaseController{
      * 新增武将
      */
     @GetMapping("/xzwj")
-    public HjArray xzwj(String userId, String cityId, String name, Integer wl, Integer fy, Integer sd, Integer zl){
-        List<Wujiang> xzwj = cityService.xzwj(userId, cityId, name, wl, fy, sd, zl);
+    public HjArray xzwj(String userId, String userName, String cityId, String name, Integer wl, Integer fy, Integer sd, Integer zl){
+        List<Wujiang> xzwj = cityService.xzwj(userId, userName, cityId, name, wl, fy, sd, zl);
         return arrayUtil.toArray(xzwj, xzwj.size(), Wujiang.class);
     }
 
@@ -120,8 +121,8 @@ public class CityController extends BaseController{
      * 新增美女
      */
     @GetMapping("/xzmv")
-    public HjArray xzmv(String userId, String cityId, String name, Integer ly, Integer sc, Integer zl, Integer cy, Integer ml, Integer dj){
-        List<Meinv> mvlb = cityService.xzmv(userId, cityId, name, ly, sc, zl, cy, ml, dj);
+    public HjArray xzmv(String userId,String userName, String cityId, String name, Integer ly, Integer sc, Integer zl, Integer cy, Integer ml, Integer dj){
+        List<Meinv> mvlb = cityService.xzmv(userId, userName, cityId, name, ly, sc, zl, cy, ml, dj);
         return arrayUtil.toArray(mvlb, mvlb.size(), Meinv.class);
     }
 
@@ -225,5 +226,29 @@ public class CityController extends BaseController{
         UserCity zyzh = cityService.zyys(lyCityId, lyzy, lysl, mbCityId, mbzy, mbsl);
         return arrayUtil.toDict(BeanUtil.beanToMap(zyzh));
     }
+
+    /**
+     * 城市资源田列表
+     * @param cityId
+     * @return
+     */
+    @GetMapping("/zytlb")
+    public HjArray zytlb(String cityId){
+        List<SlgMap> slgMaps = cityService.cityZytes(cityId);
+        return arrayUtil.toArray(slgMaps, slgMaps.size(), SlgMap.class);
+    }
+
+    /**
+     * 放弃资源田
+     * @param cityId
+     * @param zb
+     * @return
+     */
+    @GetMapping("/fqzyt")
+    public HjArray fqzyt(String cityId, Integer zb){
+        List<SlgMap> slgMaps = cityService.fqzyt(cityId, zb);
+        return arrayUtil.toArray(slgMaps, slgMaps.size(), SlgMap.class);
+    }
+
 
 }

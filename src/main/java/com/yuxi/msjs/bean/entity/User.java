@@ -35,7 +35,7 @@ public class User {
     @Field
     private String dlsj;//登录时间 10
 
-    private Long sjhms;//时间毫秒数 11
+    private Integer sjms;//时间秒数 11
     @Field
     private Integer ggcs = 0;//广告经验 12
     @Field
@@ -50,7 +50,10 @@ public class User {
     private Integer jungong = 0;//军工 17
     @Field
     private Integer lmmc = 0;//联盟名称 18
-
+    @Field
+    private Integer ccsl = 1;//城池数量 19
+    @Field
+    private Integer zgm = 0;//城池总规模 20
 
 
 }

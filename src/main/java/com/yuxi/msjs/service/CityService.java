@@ -25,6 +25,7 @@ import com.yuxi.msjs.bean.conste.Tqtsj;
 import com.yuxi.msjs.bean.entity.Chuzheng;
 import com.yuxi.msjs.bean.entity.HomeUp;
 import com.yuxi.msjs.bean.entity.Meinv;
+import com.yuxi.msjs.bean.entity.SlgMap;
 import com.yuxi.msjs.bean.entity.UserCity;
 import com.yuxi.msjs.bean.entity.UserDaoju;
 import com.yuxi.msjs.bean.entity.Wujiang;
@@ -428,8 +429,18 @@ public class CityService {
         return mongoTemplate.find(query, ZhengBing.class);
     }
 
-
-    public List<Wujiang> xzwj(String userId, String cityId, String name, Integer wl, Integer fy, Integer sd, Integer zl){
+    /**
+     * 添加武将
+     * @param userId
+     * @param cityId
+     * @param name
+     * @param wl
+     * @param fy
+     * @param sd
+     * @param zl
+     * @return
+     */
+    public List<Wujiang> xzwj(String userId, String userName, String cityId, String name, Integer wl, Integer fy, Integer sd, Integer zl){
         Wujiang wujiang = new Wujiang();
         wujiang.setUserId(userId);
         wujiang.setCityId(cityId);
@@ -438,6 +449,7 @@ public class CityService {
         wujiang.setFy(fy);
         wujiang.setZl(zl);
         wujiang.setSd(sd);
+        wujiang.setUserName(userName);
         mongoTemplate.save(wujiang);
         Query query = new Query(Criteria.where("cityId").is(cityId));
         return  mongoTemplate.find(query, Wujiang.class);
@@ -456,7 +468,7 @@ public class CityService {
      * 新增美女
      * @return
      */
-    public List<Meinv> xzmv(String userId, String cityId, String name, Integer ly, Integer sc, Integer zl, Integer cy, Integer ml, Integer dj) {
+    public List<Meinv> xzmv(String userId,String userName, String cityId, String name, Integer ly, Integer sc, Integer zl, Integer cy, Integer ml, Integer dj) {
         Meinv meinv = new Meinv();
         meinv.setUserId(userId);
         meinv.setCityId(cityId);
@@ -467,6 +479,7 @@ public class CityService {
         meinv.setZl(zl);
         meinv.setMl(ml);
         meinv.setDj(dj);
+        meinv.setUserName(userName);
         mongoTemplate.save(meinv);
         Query query = new Query(Criteria.where("cityId").is(cityId));
         return mongoTemplate.find(query, Meinv.class);
@@ -862,6 +875,59 @@ public class CityService {
         mongoTemplate.updateFirst(cityQuery, cityUpdate, UserCity.class);
         query = new Query(Criteria.where("cityId").is(cityId));
         return mongoTemplate.find(query, Meinv.class);
+    }
+
+    /**
+     * 计算资源田加成
+     *
+     * @param cityId
+     * @param zylx   资源类型
+     * @param cljc   产量加成
+     */
+    public void zytjc(String cityId, String zylx, Integer cljc) {
+        Query query = new Query(Criteria.where("cityId").is(cityId));
+        UserCity userCity = mongoTemplate.findOne(query, UserCity.class);
+        Update update = new Update();
+        if("农田".equals(zylx)){
+            update.set("liangjccl", userCity.getLiangjccl() + cljc);
+        } else if("林场".equals(zylx)){
+            update.set("mujccl", userCity.getMujccl() + cljc);
+        } else if("石矿".equals(zylx)){
+            update.set("shijccl", userCity.getShijccl() + cljc);
+        } else if("铁矿".equals(zylx)){
+            update.set("tiejccl", userCity.getTiekuang() + cljc);
+        }
+        mongoTemplate.updateFirst(query, update, UserCity.class);
+    }
+
+    /**
+     * 查询城市所属的资源田
+     * @param cityId
+     * @return
+     */
+    public List<SlgMap> cityZytes(String cityId){
+        Query query = new Query(Criteria.where("cityId").is(cityId));
+        return mongoTemplate.find(query, SlgMap.class);
+    }
+
+    /**
+     * 放弃资源田
+     * @param cityId
+     * @param zb
+     * @return
+     */
+    public List<SlgMap> fqzyt(String cityId, Integer zb) {
+        Query query = new Query(Criteria.where("id").is(zb));
+        SlgMap slgMap = mongoTemplate.findOne(query, SlgMap.class);
+        zytjc(cityId, slgMap.getDklx(), -Chanliang.getChanliang(slgMap.getDkdj()));
+        Update update = new Update();
+        update.set("sswjId", "");
+        update.set("sswjName", "");
+        update.set("lmId", "");
+        update.set("lmmc", "无");
+        update.set("cityId", "");
+        mongoTemplate.updateFirst(query, update, SlgMap.class);
+        return cityZytes(cityId);
     }
 
 //    public static void main(String[] args) {

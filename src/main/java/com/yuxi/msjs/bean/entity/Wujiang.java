@@ -68,4 +68,6 @@ public class Wujiang {
     private String spId="无";//饰品id 28
     @Field
     private Integer lwzt = 0;//流亡状态 29
+    @Field
+    private String userName;//玩家名 30
 }

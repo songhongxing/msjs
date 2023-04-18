@@ -268,6 +268,12 @@ public class ZhanDouService {
             int zysx = (int)(userCity.getNzt() / 5) +1;
             //有空闲格子得时候，可以占领这个资源田
             if(zysx > slgMaps.size()){
+                String oldWjcityId = null;
+                //如果这个资源田是别的玩家的,需要把这个玩家的资源去除
+                if (StrUtil.isNotEmpty(slgMap.getSswjId())) {
+                    oldWjcityId = slgMap.getCityId();
+                    cityService.zytjc(oldWjcityId, slgMap.getDklx(), -Chanliang.getChanliang(slgMap.getDkdj()));
+                }
                 Update update = new Update();
                 update.set("sswjId", user.getUserId());
                 update.set("sswjName", user.getName());
@@ -276,6 +282,7 @@ public class ZhanDouService {
                 update.set("cityId", chuzheng.getCzCityId());
                 query = new Query(Criteria.where("id").is(chuzheng.getGdZb()));
                 mongoTemplate.updateFirst(query, update, SlgMap.class);
+                cityService.zytjc(user.getUserId(), slgMap.getDklx(), Chanliang.getChanliang(slgMap.getDkdj()));
             }
             String npczb = npczb(chuzheng, slgMap, gjfsy, gjzbl,0);
             ZhanBao zhanBao = new ZhanBao();

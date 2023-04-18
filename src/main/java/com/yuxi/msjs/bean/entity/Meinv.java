@@ -31,6 +31,8 @@ public class Meinv {
     private String gz = "";//官职9
     @Field
     private Integer bhzt = 0;//保护状态10
+    @Field
+    private String userName; //11玩家名
 
 
 }
