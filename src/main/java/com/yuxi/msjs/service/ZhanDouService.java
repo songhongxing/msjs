@@ -235,7 +235,99 @@ public class ZhanDouService {
      * @param chuzheng
      */
     public void jielue(Chuzheng chuzheng) {
+        zengyuans.clear();
+        zyzb.clear();
+        zyblzs.clear();
+        czwj.clear();
+        wjjy.clear();
+        wjjgfl.clear();
+        Query gdQuery = new Query(Criteria.where("cityId").is(chuzheng.getGdCityId()));
+        UserCity userCity = mongoTemplate.findOne(gdQuery, UserCity.class);
+        Query zyQuery = new Query(Criteria.where("zyCityId").is(chuzheng.getGdCityId()));
+        List<ZengYuan> zengYuans = mongoTemplate.find(zyQuery, ZengYuan.class);
+        czwj.add(chuzheng.getCzUserId());
+        czwj.add(chuzheng.getGdUserId());
+        if (CollUtil.isNotEmpty(zengYuans)) {
+            for (ZengYuan zengYuan : zengYuans) {
+                zengyuans.put(zengYuan.getZyId(), zengYuan);
+                czwj.add(zengYuan.getUserId());
+                zyblzs.put(zengYuan.getZyId(), fsfbl(zengYuan));
+            }
+        } else {
+            fszb = 1;
+        }
 
+
+        Map<String, Integer> jlzy = new HashMap<>();//劫掠资源
+        //计算攻击方的攻击总值
+        Long gjl = gjl(chuzheng);
+        //计算防守方的防御总值和防守方玩家的百分比
+        Long fyl = fyl(userCity);
+        fszbl = GameUtil.zbl(userCity);
+        //计算双方实力差距
+        double slcj = fyl == 0 ? 1 : new BigDecimal(gjl).divide(new BigDecimal(fyl), 2, BigDecimal.ROUND_HALF_UP).doubleValue();
+        double cqjc = 1 + userCity.getCq() / 100;
+        fyl = (long) (fyl * cqjc);
+        int gjfbl = gjfbl(chuzheng);
+        //攻击方胜利
+        if (gjl > fyl) {
+            slcj = 1 + slcj / 20;
+            gjl = (long) (gjl * slcj);
+            //获取损失的百分比
+            double gjfsszb = 0;
+            double fsfsszb = 0;
+            if (fyl != 0) {
+                if(slcj > 10){
+                    gjfsszb = 0;
+                } else {
+                    gjfsszb = new BigDecimal(50 - slcj * 5).divide(new BigDecimal(100), 2, BigDecimal.ROUND_HALF_UP).doubleValue();
+                }
+            }
+            fsfsszb = 1 - gjfsszb;
+            gjfsy(gjfsszb, chuzheng);
+            jlzy = jlzy(gjfsszb, chuzheng, userCity);
+            //计算攻击方剩余兵力
+            int gjfsy = (int) (gjfbl * gjfsszb);
+            fsfsy(1, userCity, false);
+            Map<String, String> fsfjg = fsfjg(chuzheng, userCity, false, gjfbl, gjfsszb);
+            Map<String, String> gjfjg = gjfjg(chuzheng, true, fsfsszb);
+            String zbnr = zbnr(chuzheng, gjfbl, gjfsy, fszbl, (int) (fszbl * fsfsszb), jlzy, fsfjg, gjfjg);
+            fszbFunc("攻方胜", chuzheng, zbnr, fsfjg, gjfjg);
+        }
+        //防守方胜利
+        else {
+            //获取损失的百分比
+            fyl = (long) (fyl * slcj);
+            slcj = new BigDecimal(fyl).divide(new BigDecimal(gjl), 2, BigDecimal.ROUND_HALF_UP).doubleValue();
+            //获取损失的百分比
+            double gjfsszb = 0;
+            double fsfsszb = 0;
+            if (fyl != 0) {
+                if(slcj > 10){
+                    fsfsszb = 0;
+                } else {
+                    fsfsszb = new BigDecimal(50 - slcj * 5).divide(new BigDecimal(100), 2, BigDecimal.ROUND_HALF_UP).doubleValue();
+                }
+            }
+            gjfsszb = 1 - fsfsszb;
+            //获取损失的百分比
+            gjfsy(1, chuzheng);
+            //计算防守方剩余兵力
+            int fsfsy = (int) (fszbl * fsfsszb);
+            fsfsy(fsfsszb, userCity, true);
+            Map<String, String> fsfjg = fsfjg(chuzheng, userCity, true, gjfbl, gjfsszb);
+            Map<String, String> gjfjg = gjfjg(chuzheng, false, fsfsszb);
+            String zbnr = zbnr(chuzheng, gjfbl, (int)(gjfbl * gjfsszb), fszbl, fsfsy, null, fsfjg, gjfjg);
+            fszbFunc("守方胜", chuzheng, zbnr, fsfjg, gjfjg);
+
+        }
+        zjwjjy();
+        Chuzheng fanhui = new Chuzheng();
+        BeanUtils.copyProperties(chuzheng, fanhui);
+        fanhui.setCzId(UUID.randomUUID().toString().replaceAll("-", ""));
+        fanhui.setDdsj((int) (DateUtil.currentSeconds() + chuzheng.getXjsj()));
+        fanhui.setCzlx("返回");
+        mongoTemplate.save(fanhui);
     }
 
     public void jianlieNPC(Chuzheng chuzheng) {
@@ -404,7 +496,7 @@ public class ZhanDouService {
             fsfsy(sszb, userCity, true);
             Map<String, String> fsfjg = fsfjg(chuzheng, userCity, true, gjfbl, 1);
             Map<String, String> gjfjg = gjfjg(chuzheng, false, sszb);
-            String zbnr = zbnr(chuzheng, gjfbl, 0, fszbl, fsfsy, jlzy, fsfjg, gjfjg);
+            String zbnr = zbnr(chuzheng, gjfbl, 0, fszbl, fsfsy, null, fsfjg, gjfjg);
             fszbFunc("守方胜", chuzheng, zbnr, fsfjg, gjfjg);
 
         }

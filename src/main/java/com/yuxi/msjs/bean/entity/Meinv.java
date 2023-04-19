@@ -33,6 +33,8 @@ public class Meinv {
     private Integer bhzt = 0;//保护状态10
     @Field
     private String userName; //11玩家名
+    @Field
+    private String mvId;//12美女id
 
 
 }

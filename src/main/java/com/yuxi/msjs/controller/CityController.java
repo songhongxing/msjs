@@ -250,5 +250,38 @@ public class CityController extends BaseController{
         return arrayUtil.toArray(slgMaps, slgMaps.size(), SlgMap.class);
     }
 
+    /**
+     * 修改城市名
+     * @param cityId
+     * @param name
+     */
+    @GetMapping("/xgcsm")
+    public HjDict xgcsm(String cityId, String name){
+        UserCity xgcsm = cityService.xgcsm(cityId, name);
+        return arrayUtil.toDict(BeanUtil.beanToMap(xgcsm));
+    }
 
+    /**
+     * 修改武将名
+     * @param wjId
+     * @param name
+     * @return
+     */
+    @GetMapping("/xgwjm")
+    public HjDict xgwjm(String wjId, String name){
+        Wujiang xgwjm = cityService.xgwjm(wjId, name);
+        return arrayUtil.toDict(BeanUtil.beanToMap(xgwjm));
+    }
+
+    /**
+     * 修改美女名
+     * @param mvId
+     * @param name
+     * @return
+     */
+    @GetMapping("/xgmvm")
+    public HjDict xgmvm(String mvId, String name){
+        Meinv xgmvm = cityService.xgmvm(mvId, name);
+        return arrayUtil.toDict(BeanUtil.beanToMap(xgmvm));
+    }
 }

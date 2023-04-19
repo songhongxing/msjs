@@ -55,5 +55,4 @@ public class User {
     @Field
     private Integer zgm = 0;//城池总规模 20
 
-
 }
