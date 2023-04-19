@@ -3,8 +3,10 @@ package com.yuxi.msjs.controller;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.date.DateUtil;
+import com.yuxi.msjs.bean.entity.Fuwuqi;
 import com.yuxi.msjs.bean.entity.User;
 import com.yuxi.msjs.bean.entity.UserCity;
+import com.yuxi.msjs.bean.entity.ZhangHao;
 import com.yuxi.msjs.bean.vo.CityList;
 import com.yuxi.msjs.service.CityService;
 import com.yuxi.msjs.service.UserService;
@@ -29,14 +31,47 @@ public class UserController extends BaseController{
     @Autowired
     private CityService cityService;
 
+    @GetMapping("/fwq")
+    public HjArray fwqlb(){
+        List<Fuwuqi> fuwuqis = userService.fwqLb();
+        return arrayUtil.toArray(fuwuqis, fuwuqis.size(), Fuwuqi.class);
+    }
+
+    /**
+     * 注册
+     * @param zh
+     * @param mm
+     * @param fwqId
+     * @param fwq
+     * @return
+     */
+    @GetMapping("/zhuce")
+    public HjDict zhuce(String zh, String mm, Integer fwqId, String fwq){
+        ZhangHao zhuce = userService.zhuce(zh, mm, fwqId, fwq);
+        return arrayUtil.toDict(BeanUtil.beanToMap(zhuce));
+    }
+
+    /**
+     * 登陆账号
+     * @param zh
+     * @param mm
+     * @return
+     */
+    @GetMapping("/denglu")
+    public HjDict denglu(String zh, String mm){
+        ZhangHao zhuce = userService.login(zh, mm);
+        return arrayUtil.toDict(BeanUtil.beanToMap(zhuce));
+    }
+
+
     /**
      * 创建一个新的账号
      * @param name
      * @return
      */
     @GetMapping("/create")
-    public String createUser(String name){
-        User user = userService.insertUser(name);
+    public String createUser(String name, String userId){
+        User user = userService.insertUser(name, userId);
         return user.getUserId();
     }
 

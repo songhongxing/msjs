@@ -930,6 +930,30 @@ public class CityService {
         return cityZytes(cityId);
     }
 
+    public UserCity xgcsm(String cityId, String name) {
+        Query query = new Query(Criteria.where("cityId").is(cityId));
+        Update update = new Update();
+        update.set("cityName", name);
+        mongoTemplate.updateFirst(query, update, UserCity.class);
+        return mongoTemplate.findOne(query, UserCity.class);
+    }
+
+    public Wujiang xgwjm(String wjId, String name){
+        Query query = new Query(Criteria.where("wjId").is(wjId));
+        Update update = new Update();
+        update.set("name", name);
+        mongoTemplate.updateFirst(query, update, Wujiang.class);
+        return mongoTemplate.findOne(query, Wujiang.class);
+    }
+
+    public Meinv xgmvm(String mvId, String name){
+        Query query = new Query(Criteria.where("mvId").is(mvId));
+        Update update = new Update();
+        update.set("name", name);
+        mongoTemplate.updateFirst(query, update, Meinv.class);
+        return mongoTemplate.findOne(query, Meinv.class);
+    }
+
 //    public static void main(String[] args) {
 //        Integer dj = 0;//当前等级
 //        Integer jy = 0;

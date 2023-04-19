@@ -9,6 +9,7 @@ import com.yuxi.msjs.bean.entity.HomeUp;
 import com.yuxi.msjs.bean.entity.UserCity;
 import com.yuxi.msjs.bean.entity.ZhengBing;
 import com.yuxi.msjs.service.CityService;
+import com.yuxi.msjs.service.PaihangService;
 import com.yuxi.msjs.service.ZhanDouService;
 import com.yuxi.msjs.util.GameUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,8 +42,9 @@ public class ZiyuanTask {
     private CityService cityService;
     @Autowired
     private ZhanDouService zhanDouService;
+    @Autowired
+    private PaihangService paihangService;
     private ExecutorService executorService = Executors.newCachedThreadPool();
-    private List<String> lock = new ArrayList<>();
 
     @Scheduled(cron = "0 0/2 * * * ?")
     public void task() {
@@ -220,6 +222,21 @@ public class ZiyuanTask {
         }
     }
 
+    /**
+     * 每天定榜发送奖励
+     */
+    @Scheduled(cron = "0 0 0 * * ?")
+    public void paihang() {
+        paihangService.guimoph();
+    }
+
+    /**
+     * 每半小时统计一次规模
+     */
+    @Scheduled(cron = "0 0/30 * * * ?")
+    public void tjgm() {
+        paihangService.tjgm();
+    }
 
     /**
      * 计算攻击方战斗力
