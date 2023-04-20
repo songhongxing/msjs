@@ -4,8 +4,10 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
 import com.mongodb.bulk.BulkWriteResult;
 import com.yuxi.msjs.bean.conste.Bingzhong;
+import com.yuxi.msjs.bean.conste.Shoujun;
 import com.yuxi.msjs.bean.entity.Chuzheng;
 import com.yuxi.msjs.bean.entity.HomeUp;
+import com.yuxi.msjs.bean.entity.SlgMap;
 import com.yuxi.msjs.bean.entity.UserCity;
 import com.yuxi.msjs.bean.entity.ZhengBing;
 import com.yuxi.msjs.service.CityService;
@@ -84,6 +86,28 @@ public class ZiyuanTask {
         }
         operations.upsert(updateList);
         BulkWriteResult execute = operations.execute();
+    }
+
+    /**
+     * 恢复地图守军
+     */
+    @Scheduled(cron = "0/10 * * * * ?")
+    public void hfsj() {
+        Query query = new Query(Criteria.where("hfsj").lte(DateUtil.currentSeconds()).and("hfsj").ne(0));
+        List<SlgMap> slgMaps = mongoTemplate.find(query, SlgMap.class);
+        if(CollUtil.isNotEmpty(slgMaps)){
+            Query updateQuery;
+            Update update;
+            List<Pair<Query, Update>> updateList = new ArrayList<>(slgMaps.size());
+            BulkOperations operations = mongoTemplate.bulkOps(BulkOperations.BulkMode.UNORDERED, "user_city");
+            for(SlgMap slgMap : slgMaps){
+                updateQuery = new Query(Criteria.where("id").is(slgMap.getId()));
+                update = new Update();
+                update.set("hfsj",0);
+                update.set("dksj", Shoujun.getKeyByValue(slgMap.getDkdj()));
+            }
+        }
+
     }
 
     /**

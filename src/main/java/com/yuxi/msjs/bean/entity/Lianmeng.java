@@ -31,7 +31,7 @@ public class Lianmeng {
     @Field
     private Integer lmsjsx = 10000;//联盟升级所需
     @Field
-    private Integer zyscdj = 0;//资源生产等级
+    private Integer zyscdj = 0;//资源生产等级 每一级增加2%
     @Field
     private Integer zyscjy = 0;//资源生产经验
     @Field

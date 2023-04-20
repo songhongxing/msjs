@@ -1,6 +1,7 @@
 package com.yuxi.msjs.service;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.collection.ListUtil;
 import com.yuxi.msjs.bean.conste.Daoju;
 import com.yuxi.msjs.bean.entity.UserDaoju;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,12 +26,14 @@ public class DaojuService {
 
     @Autowired
     private MongoTemplate mongoTemplate;
+    @Autowired
+    private HuobiService huobiService;
 
 
-    public List<UserDaoju> insert(List<UserDaoju> userDaojus){
+    public List<UserDaoju> insert(List<UserDaoju> userDaojus) {
         Query query;
         //判断这个用户有没有这个道具,有的话就+1
-        for(UserDaoju userDaoju : userDaojus){
+        for (UserDaoju userDaoju : userDaojus) {
             query = new Query(Criteria.where("userId").is(userDaoju.getUserId()).and("name").is(userDaoju.getName()));
             userDaoju.setMiaoshu(Daoju.getMiaoshuz(userDaoju.getName()));
             userDaoju.setKsy(Daoju.getKsyz(userDaoju.getName()));
@@ -65,26 +68,59 @@ public class DaojuService {
         //计算剩余数量
         int sy = daoju.getSl() - sl;
         //如果剩余数量=0,把这个记录删除
-        if(sy == 0){
+        if (sy == 0) {
             mongoTemplate.remove(query, UserDaoju.class);
         } else {
             Update update = new Update();
             update.set("sl", sy);
             mongoTemplate.updateFirst(query, update, UserDaoju.class);
         }
-
+        if ("小袋黄金".equals(name)) {
+            huobiService.huobi(userId, 50 * sl);
+        } else if ("中袋黄金".equals(name)) {
+            huobiService.huobi(userId, 100 * sl);
+        } else if ("大袋黄金".equals(name)) {
+            huobiService.huobi(userId, 200 * sl);
+        }
     }
 
     public Map<String, Object> djsl(String userId){
         Query query = new Query(Criteria.where("userId").is(userId));
         List<UserDaoju> userDaojus = mongoTemplate.find(query, UserDaoju.class);
         Map<String, Object> map = new HashMap<>();
-        if(CollUtil.isNotEmpty(userDaojus)){
+        if (CollUtil.isNotEmpty(userDaojus)) {
             for (UserDaoju userDaoju : userDaojus) {
                 map.put(userDaoju.getName(), userDaoju.getSl());
             }
         }
         return map;
+    }
+
+    /**
+     * 购买道具
+     *
+     * @param userId
+     * @param daojuName
+     * @param gg        是否是广告
+     * @param hblx      货币类型(黄金/声望)
+     */
+    public void gmdj(String userId, String daojuName, Integer gg, String hblx) {
+        if (gg == 0) {
+            if (hblx.equals("黄金")) {
+                int hj = -Daoju.getHjz(daojuName);
+                huobiService.huobi(userId, hj);
+            } else if (hblx.equals("声望")) {
+                int sw = -Daoju.getSwz(daojuName);
+                huobiService.huobi(userId, sw);
+            }
+        }
+        UserDaoju userDaoju = new UserDaoju();
+        userDaoju.setUserId(userId);
+        userDaoju.setName(daojuName);
+        userDaoju.setMiaoshu(Daoju.getMiaoshuz(daojuName));
+        userDaoju.setSl(1);
+        userDaoju.setKsy(Daoju.getKsyz(daojuName));
+        insert(ListUtil.toList(userDaoju));
     }
 
 }

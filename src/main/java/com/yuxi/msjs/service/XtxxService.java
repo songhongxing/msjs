@@ -2,7 +2,7 @@ package com.yuxi.msjs.service;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
-import com.yuxi.msjs.bean.entity.Lmsq;
+import com.yuxi.msjs.bean.entity.LianmShenq;
 import com.yuxi.msjs.bean.entity.User;
 import com.yuxi.msjs.bean.entity.UserDaoju;
 import com.yuxi.msjs.bean.entity.Xtxx;
@@ -112,7 +112,7 @@ public class XtxxService {
         User user = mongoTemplate.findOne(query, User.class);
         if (user != null && user.getLmgz() > 0) {
             query = new Query(Criteria.where("lmId").is(user.getLmId()));
-            long lmsq = mongoTemplate.count(query, Lmsq.class);
+            long lmsq = mongoTemplate.count(query, LianmShenq.class);
             map.put("入盟申请", lmsq);
         }
         return map;

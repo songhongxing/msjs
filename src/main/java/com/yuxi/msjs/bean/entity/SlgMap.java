@@ -63,4 +63,6 @@ public class SlgMap {
     private String cityId="";//城市id11
     @Field
     private String sjlx="";//守军类型 12
+    @Field
+    private Integer hfsj=0;//恢复时间13
 }

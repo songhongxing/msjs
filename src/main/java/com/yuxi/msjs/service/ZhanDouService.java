@@ -375,6 +375,9 @@ public class ZhanDouService {
                 query = new Query(Criteria.where("id").is(chuzheng.getGdZb()));
                 mongoTemplate.updateFirst(query, update, SlgMap.class);
                 cityService.zytjc(user.getUserId(), slgMap.getDklx(), Chanliang.getChanliang(slgMap.getDkdj()));
+            } else {
+                slgMap.setDksj(0);
+                sjhf(slgMap);
             }
             String npczb = npczb(chuzheng, slgMap, gjfsy, gjzbl,0);
             ZhanBao zhanBao = new ZhanBao();
@@ -406,6 +409,8 @@ public class ZhanDouService {
             zhanBao.setXxbt(chuzheng.getCzCityName() + "攻打" + chuzheng.getGdUserName() + "战报");
             zhanBao.setXxnr(npczb);
             mongoTemplate.save(zhanBao);
+            slgMap.setDksj((int)(slgMap.getDksj() * sszb));
+            sjhf(slgMap);
         }
         zjwjjy();
 
@@ -518,6 +523,19 @@ public class ZhanDouService {
             cityService.zjwjjy(key, wjjy.get(key));
         }
 
+    }
+
+    /**
+     * 设置地图的守军恢复时间
+     *
+     * @param slgMap
+     */
+    private void sjhf(SlgMap slgMap) {
+        Query query = new Query(Criteria.where("id").is(slgMap.getId()));
+        Update update = new Update();
+        update.set("hfsj", (int) (DateUtil.currentSeconds() + 3600));
+        update.set("dksj", slgMap.getDksj());
+        mongoTemplate.updateFirst(query, update, SlgMap.class);
     }
 
     /**

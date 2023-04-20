@@ -1,18 +1,24 @@
 package com.yuxi.msjs.service;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.date.DateUtil;
+import com.mongodb.bulk.BulkWriteResult;
+import com.yuxi.msjs.bean.entity.Jxfl;
 import com.yuxi.msjs.bean.entity.LianmShenq;
 import com.yuxi.msjs.bean.entity.Lianmeng;
 import com.yuxi.msjs.bean.entity.SlgMap;
 import com.yuxi.msjs.bean.entity.User;
+import com.yuxi.msjs.bean.entity.UserCity;
 import com.yuxi.msjs.bean.vo.LianmengList;
 import com.yuxi.msjs.bean.vo.Lmcy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.mongodb.core.BulkOperations;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
+import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -52,7 +58,7 @@ public class LianmengService {
         update.set("lmgzZw", "盟主");
         mongoTemplate.updateFirst(query, update, "user");
         //修改地图上的玩家联盟
-        updateSlgMap(userId, lianmeng.getLmId());
+        updateSlgMap(userId, lianmeng);
         return lmcyList(lianmeng.getLmId());
     }
 
@@ -107,7 +113,7 @@ public class LianmengService {
     }
 
     /**
-     * 捐献数量
+     * 捐献俘虏
      *
      * @param lmId
      * @param userId
@@ -128,8 +134,23 @@ public class LianmengService {
             userUpdate.set("flsl", user.getFlsl() - jxsl);
             userUpdate.set("lmgx", Integer.valueOf(jxsl / 10));
             mongoTemplate.updateFirst(userQuery, userUpdate, User.class);
+            Jxfl jxfl = new Jxfl(lmId, user.getName(), jxsl, DateUtil.now(), (int) DateUtil.currentSeconds());
+            mongoTemplate.save(jxfl);
         }
         return lianmeng;
+    }
+
+    /**
+     * 捐献俘虏日志
+     * @param lmId
+     * @return
+     */
+    public List<Jxfl> jxflrz(String lmId){
+        Query query = new Query();
+        query.skip(0);
+        query.limit(100);
+        query.with(Sort.by(Sort.Direction.DESC, "datems"));
+        return mongoTemplate.find(query, Jxfl.class);
     }
 
     private Update getUpdate(Lianmeng lianmeng, String jxlx, Integer jxsl) {
@@ -263,26 +284,56 @@ public class LianmengService {
         Query query = new Query(Criteria.where("lmId").is(lmId).and("userId").is(userId));
         Query userQuery = new Query(Criteria.where("userId").is(userId));
         User user = mongoTemplate.findOne(userQuery, User.class);
+        Lianmeng lianmeng = mongoTemplate.findOne(query, Lianmeng.class);
         if(type == 1 && user.getLmId().equals("0")){
             Update update = new Update();
             update.set("lmId", lmId);
+            update.set("lmmc",lianmeng.getLmmc());
             mongoTemplate.updateFirst(userQuery, update, User.class);
             //修改地图上的玩家联盟
-            updateSlgMap(userId, lmId);
+            updateSlgMap(userId, lianmeng);
         }
         mongoTemplate.remove(query, LianmShenq.class);
         return lmsq(lmId);
     }
 
-    public void updateSlgMap(String userId, String lmId){
+    public void updateSlgMap(String userId, Lianmeng lianmeng){
         //修改地图上的玩家联盟
         Query mapQuery = new Query(Criteria.where("sswjId").is(userId));
-        Query lmQuery = new Query(Criteria.where("lmId").is(lmId));
-        Lianmeng lianmeng = mongoTemplate.findOne(lmQuery, Lianmeng.class);
         Update mapUpdate = new Update();
-        mapUpdate.set("lmId", lmId);
+        mapUpdate.set("lmId", lianmeng.getLmId());
         mapUpdate.set("lmmc", lianmeng.getLmmc());
         mongoTemplate.updateFirst(mapQuery, mapUpdate, SlgMap.class);
     }
 
+    public void tclm(String lmId, String userId) {
+        Query query = new Query(Criteria.where("userId").is(userId));
+        Update update = new Update();
+        update.set("lmId","无");
+        update.set("lmmc", "无");
+        update.set("lmgx", 0);
+        update.set("jungong", 0);
+        update.set("junxian", "五等校尉");
+        update.set("lmgz", 0);
+        update.set("lmgzZw", "成员");
+        mongoTemplate.updateFirst(query, update, User.class);
+        //减去联盟的各种加成
+        List<UserCity> userCities = mongoTemplate.find(query, UserCity.class);
+        query = new Query(Criteria.where("lmId").is(lmId));
+        List<Pair<Query, Update>> updateList = new ArrayList<>(userCities.size());
+        BulkOperations operations = mongoTemplate.bulkOps(BulkOperations.BulkMode.UNORDERED, "user_city");
+        Lianmeng lianmeng = mongoTemplate.findOne(query, Lianmeng.class);
+        Pair<Query, Update> updatePair;
+        for(UserCity userCity : userCities){
+            update = new Update();
+            update.set("mujc",userCity.getMujc() - lianmeng.getZbsddj() * 2 / 100);
+            update.set("shijc",userCity.getShijc() - lianmeng.getZbsddj() * 2 / 100);
+            update.set("tiejc",userCity.getTiejc() - lianmeng.getZbsddj() * 2 / 100);
+            update.set("liangjc",userCity.getLiangjc() - lianmeng.getZbsddj() * 2 / 100);
+            updatePair = Pair.of(query, update);
+            updateList.add(updatePair);
+        }
+        operations.upsert(updateList);
+        operations.execute();
+    }
 }

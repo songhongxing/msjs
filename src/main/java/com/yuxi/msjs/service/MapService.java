@@ -39,6 +39,7 @@ public class MapService {
                 slgMap.setDkmc(slgMap.getDklx());
                 slgMap.setDkdj(RandomUtil.randomInt(1, 5));
                 slgMap.setDksj(Shoujun.getKeyByValue(slgMap.getDkdj()));
+                slgMap.setSjlx(Shoujun.getSjlxz(slgMap.getDkdj()));
             }
             slgMap.setMzbz(0);
             mongoTemplate.save(slgMap);

@@ -23,7 +23,7 @@ public class User {
     @Field
     private Integer hj = 0;//黄金 4
     @Field
-    private Integer tq = 0;//铜钱 5
+    private Integer sw = 0;//声望 5
     @Field
     private String lmId = "无";//联盟id 6
     @Field
@@ -49,7 +49,7 @@ public class User {
     @Field
     private Integer jungong = 0;//军工 17
     @Field
-    private Integer lmmc = 0;//联盟名称 18
+    private String lmmc = "无";//联盟名称 18
     @Field
     private Integer ccsl = 1;//城池数量 19
     @Field

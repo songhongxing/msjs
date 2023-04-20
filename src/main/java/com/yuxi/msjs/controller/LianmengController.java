@@ -3,6 +3,7 @@ package com.yuxi.msjs.controller;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.map.MapUtil;
 import com.yuxi.msjs.bean.entity.HomeUp;
+import com.yuxi.msjs.bean.entity.Jxfl;
 import com.yuxi.msjs.bean.entity.Lianmeng;
 import com.yuxi.msjs.bean.entity.User;
 import com.yuxi.msjs.bean.entity.UserCity;
@@ -89,27 +90,74 @@ public class LianmengController extends BaseController{
         return arrayUtil.toDict(BeanUtil.beanToMap(jxfl));
     }
 
+    /**
+     * 捐献俘虏日志
+     * @param lmId
+     * @return
+     */
+    @GetMapping("/jxflrz")
+    public HjArray jxflrz(String lmId){
+        List<Jxfl> jxflrz = lianmengService.jxflrz(lmId);
+        return arrayUtil.toArray(jxflrz, jxflrz.size(), Jxfl.class);
+    }
+
+    /**
+     * 联盟公告发布
+     * @param lmId
+     * @param userId
+     * @param lmgg
+     * @return
+     */
     @GetMapping("/lmgg")
     public HjDict fbgg(String lmId, String userId, String lmgg){
         Lianmeng lianmeng = lianmengService.fbgg(lmId, userId, lmgg);
         return arrayUtil.toDict(BeanUtil.beanToMap(lianmeng));
     }
 
+    /**
+     * 加入联盟申请
+     * @param lmId
+     * @param userId
+     */
     @GetMapping("/jrlm")
     public void jrlm(String lmId, String userId){
         lianmengService.jrlm(lmId, userId);
     }
 
+    /**
+     * 联盟申请列表
+     * @param lmId
+     * @return
+     */
     @GetMapping("/lmsq")
     public HjArray lmsq(String lmId){
         List<User> lmsq = lianmengService.lmsq(lmId);
         return arrayUtil.toArray(lmsq, lmsq.size(), User.class);
     }
 
+    /**
+     * 审批入盟申请
+     * @param lmId
+     * @param userId
+     * @param type
+     * @return
+     */
     @GetMapping("/spsq")
     public HjArray spsq(String lmId,String userId, Integer type){
         List<User> sqsp = lianmengService.sqsp(lmId, userId, type);
         return arrayUtil.toArray(sqsp, sqsp.size(), User.class);
+    }
+
+    /**
+     * 退出联盟
+     * @param lmId
+     * @param userId
+     * @return
+     */
+    @GetMapping("/tclm")
+    public HjDict tclm(String lmId, String userId){
+        lianmengService.tclm(lmId, userId);
+        return null;
     }
 
 }
