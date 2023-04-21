@@ -34,7 +34,7 @@ public class User {
     private Integer lmgx = 0;//联盟贡献 9
     @Field
     private String dlsj;//登录时间 10
-
+    @Field
     private Integer sjms;//时间秒数 11
     @Field
     private Integer ggcs = 0;//广告经验 12

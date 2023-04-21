@@ -10,6 +10,7 @@ import com.yuxi.msjs.bean.entity.HomeUp;
 import com.yuxi.msjs.bean.entity.SlgMap;
 import com.yuxi.msjs.bean.entity.UserCity;
 import com.yuxi.msjs.bean.entity.ZhengBing;
+import com.yuxi.msjs.service.CdkService;
 import com.yuxi.msjs.service.CityService;
 import com.yuxi.msjs.service.PaihangService;
 import com.yuxi.msjs.service.ZhanDouService;
@@ -46,6 +47,8 @@ public class ZiyuanTask {
     private ZhanDouService zhanDouService;
     @Autowired
     private PaihangService paihangService;
+    @Autowired
+    private CdkService cdkService;
     private ExecutorService executorService = Executors.newCachedThreadPool();
 
     @Scheduled(cron = "0 0/2 * * * ?")
@@ -254,6 +257,11 @@ public class ZiyuanTask {
         paihangService.guimoph();
     }
 
+    @Scheduled(cron = "0 0 0 * * ?")
+    public void gqcdk() {
+        cdkService.gqcdk();
+    }
+
     /**
      * 每半小时统计一次规模
      */
@@ -295,7 +303,7 @@ public class ZiyuanTask {
             } else if ("侦察".equals(chuzheng.getCzlx())) {
                 zhanDouService.zhencha(chuzheng);
             } else if ("劫掠".equals(chuzheng.getCzlx())) {
-
+                zhanDouService.jielue(chuzheng);
             } else if ("增援".equals(chuzheng.getCzlx())) {
                 zhanDouService.zengyuan(chuzheng);
             } else if ("返回".equals(chuzheng.getCzlx())) {
