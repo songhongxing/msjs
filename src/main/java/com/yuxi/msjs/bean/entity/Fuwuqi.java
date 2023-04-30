@@ -15,11 +15,11 @@ import org.springframework.data.mongodb.core.mapping.Field;
 public class Fuwuqi {
 
     @Field
-    private Integer index;
+    private Integer index;//0
     @Field
-    private String name;//服务器名称
+    private String name;//服务器名称 1
     @Field
-    private String url;//服务器url
+    private String url;//服务器url 2
     @Field
-    private Integer wjsl;//玩家数量
+    private Integer wjsl;//玩家数量 3
 }

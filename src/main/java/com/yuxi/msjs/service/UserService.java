@@ -59,6 +59,9 @@ public class UserService {
             zhangHao.setFwqId(fwqId);
             zhangHao.setFwq(fwq);
             zhangHao.setUserId(userId);
+            query = new Query(Criteria.where("index").is(fwqId));
+            Fuwuqi one = mongoTemplate.findOne(query, Fuwuqi.class);
+            zhangHao.setFwqUrl(one.getUrl());
             mongoTemplate.save(zhangHao);
         }
         return zhangHao;

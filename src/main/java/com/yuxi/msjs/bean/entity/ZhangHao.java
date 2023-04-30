@@ -17,11 +17,13 @@ public class ZhangHao {
     @Field
     private String zh;//账号 0
     @Field
-    private String mm;//密码 0
+    private String mm;//密码 1
     @Field
     private Integer fwqId;//服务器id 2
     @Field
     private String fwq;//服务器 3
     @Field
     private String userId;// 4
+    @Field
+    private String fwqUrl;// 5
 }
