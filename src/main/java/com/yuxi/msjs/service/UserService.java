@@ -8,6 +8,7 @@ import com.yuxi.msjs.bean.entity.SlgMap;
 import com.yuxi.msjs.bean.entity.User;
 import com.yuxi.msjs.bean.entity.UserCity;
 import com.yuxi.msjs.bean.entity.ZhangHao;
+import com.yuxi.msjs.util.GameUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -51,8 +52,9 @@ public class UserService {
     public ZhangHao zhuce(String zh, String mm, Integer fwqId, String fwq){
         Query query = new Query(Criteria.where("zh").is(zh).and("mm").is(mm));
         ZhangHao zhangHao = mongoTemplate.findOne(query, ZhangHao.class);
+        String userId = "";
         if(zhangHao == null){
-            String userId= UUID.randomUUID().toString().replaceAll("-", "");
+            userId = GameUtil.uuid();
             zhangHao = new ZhangHao();
             zhangHao.setZh(zh);
             zhangHao.setMm(mm);
@@ -63,7 +65,9 @@ public class UserService {
             Fuwuqi one = mongoTemplate.findOne(query, Fuwuqi.class);
             zhangHao.setFwqUrl(one.getUrl());
             mongoTemplate.save(zhangHao);
+            insertUser("玩家"+ userId.substring(userId.length() - 6), userId);
         }
+
         return zhangHao;
     }
 
@@ -104,5 +108,10 @@ public class UserService {
     public User findById(String userId) {
         Query query = new Query(Criteria.where("userId").is(userId));
         return mongoTemplate.findOne(query, User.class);
+    }
+
+    public Long zhcheck(String zh) {
+        Query zhanghao = new Query(Criteria.where("zh").is(zh));
+        return mongoTemplate.count(zhanghao, ZhangHao.class);
     }
 }

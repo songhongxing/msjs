@@ -21,7 +21,7 @@ public class Lianmeng {
     @Field
     private Integer lmdj = 0;//联盟等级
     @Field
-    private String lmgg = "";//联盟公告
+    private String lmgg = "暂无公告";//联盟公告
     @Field
     private Integer lmrs = 0;//联盟人数
     @Field

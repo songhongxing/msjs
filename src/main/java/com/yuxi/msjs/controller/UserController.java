@@ -37,6 +37,10 @@ public class UserController extends BaseController{
         return arrayUtil.toArray(fuwuqis, fuwuqis.size(), Fuwuqi.class);
     }
 
+    @GetMapping("/zhcheck")
+    public Long zhCheck(String zh){
+        return userService.zhcheck(zh);
+    }
     /**
      * 注册
      * @param zh

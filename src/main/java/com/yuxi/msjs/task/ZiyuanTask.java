@@ -96,7 +96,7 @@ public class ZiyuanTask {
      */
     @Scheduled(cron = "0/10 * * * * ?")
     public void hfsj() {
-        Query query = new Query(Criteria.where("hfsj").lte(DateUtil.currentSeconds()).and("hfsj").ne(0));
+        Query query = new Query(Criteria.where("hfsj").lte(DateUtil.currentSeconds()));
         List<SlgMap> slgMaps = mongoTemplate.find(query, SlgMap.class);
         if(CollUtil.isNotEmpty(slgMaps)){
             Query updateQuery;

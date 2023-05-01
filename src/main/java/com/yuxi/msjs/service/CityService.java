@@ -66,7 +66,7 @@ public class CityService {
         userCity.setCityId(UUID.randomUUID().toString().replaceAll("-", ""));
         userCity.setUserId(userId);
         userCity.setZuobiao(zuobiao);
-        userCity.setCityName(userName);
+        userCity.setCityName("新的城市");
         mongoTemplate.save(userCity);
         //修改地图类型为玩家城池
         Query query = new Query(Criteria.where("_id").is(zuobiao));
