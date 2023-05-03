@@ -3,6 +3,7 @@ package com.yuxi.msjs.service;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.ListUtil;
 import com.yuxi.msjs.bean.conste.Daoju;
+import com.yuxi.msjs.bean.entity.User;
 import com.yuxi.msjs.bean.entity.UserDaoju;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -65,6 +66,9 @@ public class DaojuService {
     public void djsy(String userId,String name, Integer sl){
         Query query = new Query(Criteria.where("userId").is(userId).and("name").is(name));
         UserDaoju daoju = mongoTemplate.findOne(query, UserDaoju.class);
+        if(daoju == null){
+            return;
+        }
         //计算剩余数量
         int sy = daoju.getSl() - sl;
         //如果剩余数量=0,把这个记录删除
@@ -76,11 +80,11 @@ public class DaojuService {
             mongoTemplate.updateFirst(query, update, UserDaoju.class);
         }
         if ("小袋黄金".equals(name)) {
-            huobiService.huobi(userId, 50 * sl);
+            huobiService.huobi(userId, 50 * sl, "hj");
         } else if ("中袋黄金".equals(name)) {
-            huobiService.huobi(userId, 100 * sl);
+            huobiService.huobi(userId, 100 * sl, "hj");
         } else if ("大袋黄金".equals(name)) {
-            huobiService.huobi(userId, 200 * sl);
+            huobiService.huobi(userId, 200 * sl, "hj");
         }
     }
 
@@ -100,18 +104,27 @@ public class DaojuService {
      * 购买道具
      *
      * @param userId
-     * @param daojuName
-     * @param gg        是否是广告
-     * @param hblx      货币类型(黄金/声望)
+     * @param gg     是否是广告
+     * @param hblx   货币类型(黄金/声望)
      */
-    public void gmdj(String userId, String daojuName, Integer gg, String hblx) {
+    public User gmdj(String userId,String daojuName, Integer gg, String hblx ) {
+        Query query = new Query(Criteria.where("userId").is(userId));
+        User user = mongoTemplate.findOne(query, User.class);
         if (gg == 0) {
-            if (hblx.equals("黄金")) {
-                int hj = -Daoju.getHjz(daojuName);
-                huobiService.huobi(userId, hj);
-            } else if (hblx.equals("声望")) {
-                int sw = -Daoju.getSwz(daojuName);
-                huobiService.huobi(userId, sw);
+            if ("hj".equals(hblx)) {
+                if(user.getHj() > Daoju.getHjz(daojuName)){
+                    int hj = -Daoju.getHjz(daojuName);
+                    huobiService.huobi(userId, hj, "hj");
+                } else {
+                    return user;
+                }
+            } else if ("sw".equals(hblx)) {
+                if(user.getSw() > Daoju.getSwz(daojuName)){
+                    int sw = -Daoju.getSwz(daojuName);
+                    huobiService.huobi(userId, sw, "sw");
+                } else {
+                    return user;
+                }
             }
         }
         UserDaoju userDaoju = new UserDaoju();
@@ -121,6 +134,8 @@ public class DaojuService {
         userDaoju.setSl(1);
         userDaoju.setKsy(Daoju.getKsyz(daojuName));
         insert(ListUtil.toList(userDaoju));
+        query = new Query(Criteria.where("userId").is(userId));
+        return mongoTemplate.findOne(query, User.class);
     }
 
 }

@@ -17,15 +17,15 @@ import org.springframework.data.mongodb.core.mapping.Field;
 public class UserDaoju {
 
     @Field
-    private String userId;
+    private String userId; //0
     @Field
-    private String name;//道具名
+    private String name;//道具名 1
     @Field
-    private String miaoshu;//描述
+    private String miaoshu;//描述 2
     @Field
-    private Integer sl;//数量
+    private Integer sl;//数量 3
     @Field
-    private Integer ksy;//可在背包界面使用
+    private Integer ksy;//可在背包界面使用 4
 
     public UserDaoju(String userId, String name, Integer sl) {
         this.userId = userId;

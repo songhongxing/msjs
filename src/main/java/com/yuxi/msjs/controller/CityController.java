@@ -52,8 +52,8 @@ public class CityController extends BaseController{
      * @return
      */
     @GetMapping("/jz/sj")
-    public HjArray jianzhusj(String cityId, String jzName, Integer jzdj, Integer sjsj){
-        List<HomeUp> jzshengji = cityService.jzshengji(cityId, jzName, jzdj, sjsj);
+    public HjArray jianzhusj(String cityId, String jzName){
+        List<HomeUp> jzshengji = cityService.jzshengji(cityId, jzName);
         return arrayUtil.toArray(jzshengji, jzshengji.size(), HomeUp.class);
     }
 
@@ -64,7 +64,7 @@ public class CityController extends BaseController{
      * @return
      */
     @GetMapping("/jz/sjwc")
-    public HjArray jianzhusj(String cityId, String jzName){
+    public HjArray sjwc(String cityId, String jzName){
         List<HomeUp> sjwc = cityService.sjwc(cityId, jzName);
         return  arrayUtil.toArray(sjwc, sjwc.size(), HomeUp.class);
     }
@@ -283,5 +283,15 @@ public class CityController extends BaseController{
     public HjDict xgmvm(String mvId, String name){
         Meinv xgmvm = cityService.xgmvm(mvId, name);
         return arrayUtil.toDict(BeanUtil.beanToMap(xgmvm));
+    }
+
+    /**
+     * 改名
+     * @param cityId
+     * @param name
+     */
+    @GetMapping("/gaiming")
+    public void gaiming(String cityId, String name){
+        cityService.gaiming(cityId, name);
     }
 }

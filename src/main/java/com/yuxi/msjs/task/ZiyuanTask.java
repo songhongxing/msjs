@@ -5,16 +5,11 @@ import cn.hutool.core.date.DateUtil;
 import com.mongodb.bulk.BulkWriteResult;
 import com.yuxi.msjs.bean.conste.Bingzhong;
 import com.yuxi.msjs.bean.conste.Shoujun;
-import com.yuxi.msjs.bean.entity.Chuzheng;
-import com.yuxi.msjs.bean.entity.HomeUp;
-import com.yuxi.msjs.bean.entity.SlgMap;
-import com.yuxi.msjs.bean.entity.UserCity;
-import com.yuxi.msjs.bean.entity.ZhengBing;
+import com.yuxi.msjs.bean.entity.*;
 import com.yuxi.msjs.service.CdkService;
 import com.yuxi.msjs.service.CityService;
 import com.yuxi.msjs.service.PaihangService;
 import com.yuxi.msjs.service.ZhanDouService;
-import com.yuxi.msjs.util.GameUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.BulkOperations;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -51,7 +46,10 @@ public class ZiyuanTask {
     private CdkService cdkService;
     private ExecutorService executorService = Executors.newCachedThreadPool();
 
-    @Scheduled(cron = "0 0/2 * * * ?")
+    /**
+     * 资源变化
+     */
+    @Scheduled(cron = "0 0/1 * * * ?")
     public void task() {
         List<UserCity> userCities = mongoTemplate.findAll(UserCity.class);
         if (CollUtil.isEmpty(userCities)) {
@@ -64,17 +62,29 @@ public class ZiyuanTask {
         for (UserCity userCity : userCities) {
             query = new Query();
             query.addCriteria(Criteria.where("cityId").is(userCity.getCityId()));
-            if (userCity.getMucc() < userCity.getCkcc()) {
-                userCity.setMucc(Integer.valueOf(userCity.getMucl() / 30) + userCity.getMucc() + userCity.getMujccl());
+            int mucc = Integer.valueOf(userCity.getMucl() / 30) + userCity.getMucc() + userCity.getMujccl();
+            if (mucc > userCity.getCkcc()) {
+                userCity.setMucc(userCity.getCkcc());
+            } else {
+                userCity.setMucc(mucc);
             }
-            if (userCity.getShicc() < userCity.getCkcc()) {
-                userCity.setShicc(Integer.valueOf(userCity.getShicl() / 30) + userCity.getShicc() + userCity.getShijccl());
+            int shicc = Integer.valueOf(userCity.getShicl() / 30) + userCity.getShicc() + userCity.getShijccl();
+            if (shicc > userCity.getCkcc()) {
+                userCity.setShicc(userCity.getCkcc());
+            }else {
+                userCity.setShicc(shicc);
             }
-            if (userCity.getTiecc() < userCity.getCkcc()) {
-                userCity.setTiecc(Integer.valueOf(userCity.getTiecl() / 30) + userCity.getTiecc() + userCity.getTiejccl());
+            int tiecc = Integer.valueOf(userCity.getTiecl() / 30) + userCity.getTiecc() + userCity.getTiejccl();
+            if (tiecc > userCity.getCkcc()) {
+                userCity.setTiecc(userCity.getCkcc());
+            } else{
+                userCity.setTiecc(tiecc);
             }
-            if (userCity.getLiangcc() < userCity.getLccc()) {
-                userCity.setLiangcc(Integer.valueOf(userCity.getLiangcl() / 30) + userCity.getLiangcc() + userCity.getLiangjccl());
+            int liangcc = Integer.valueOf(userCity.getLiangcl() / 30) + userCity.getLiangcc() + userCity.getLiangjccl();
+            if (liangcc > userCity.getLccc()) {
+                userCity.setLiangcc(userCity.getLccc());
+            } else {
+                userCity.setLiangcc(liangcc);
             }
             update = new Update();
             update.set("mucc", userCity.getMucc());
@@ -96,7 +106,7 @@ public class ZiyuanTask {
      */
     @Scheduled(cron = "0/10 * * * * ?")
     public void hfsj() {
-        Query query = new Query(Criteria.where("hfsj").lte(DateUtil.currentSeconds()));
+        Query query = new Query(Criteria.where("hfsj").lte(DateUtil.currentSeconds()).andOperator(Criteria.where("hfsj").gt(0)));
         List<SlgMap> slgMaps = mongoTemplate.find(query, SlgMap.class);
         if(CollUtil.isNotEmpty(slgMaps)){
             Query updateQuery;
@@ -160,11 +170,6 @@ public class ZiyuanTask {
                 mongoTemplate.updateFirst(query, update, "user_city");
                 query.addCriteria(Criteria.where("bz").is(zhengBing.getBz()));
                 mongoTemplate.remove(query,"zhengbing");
-                //计算兵种耗粮
-                Integer zhl = GameUtil.zhl(userCity);
-                update = new Update();
-                update.set("zhl", zhl);
-                mongoTemplate.updateFirst(query, update, "user_city");
             } else {
                 //计算征兵了多久
                 int zbhf = (int) DateUtil.currentSeconds() - zhengBing.getKssj();
@@ -177,24 +182,40 @@ public class ZiyuanTask {
             }
 
         }
-
-
     }
 
+    /**
+     * 重新设置登录时间
+     */
+    @Scheduled(cron = "0 0 0 * * ?")
+    public void csdenglu(){
+        Query query = new Query(Criteria.where("xdl").ne(0));
+        Update update = new Update();
+        update.set("xdl", 0);
+        mongoTemplate.updateFirst(query, update, User.class);
+    }
 
-    @Scheduled(cron = "0 0/1 * * * ?")
+    @Scheduled(cron = "0/30 * * * * ?")
     public void zongbingli() {
         //计算城市总兵力
         List<UserCity> cityList = mongoTemplate.findAll(UserCity.class);
         Query bingliQuery;
+        Query query;
+        User user = null;
         Update bingliUpdate = new Update();
         if(CollUtil.isNotEmpty(cityList)){
             for(UserCity city : cityList){
+                query = new Query(Criteria.where("userId").is(city.getUserId()));
                 bingliQuery = new Query(Criteria.where("cityId").is(city.getCityId()));
                 int zgm = city.getNzt()+city.getTqt()+city.getJg()+city.getJs()+city.getBy()+city.getCk()+city.getLc()+city.getAc()+city.getCq()+city.getLc()+city.getShikuang()+city.getTiekuang()+city.getNongtian();
                 int zbl = city.getBb()+city.getQb()+city.getNb()+city.getQq()+city.getHq()+city.getZq()+city.getCh()+city.getGb()+city.getCc()+city.getTsc();
                 bingliUpdate.set("zbl", zbl);
                 bingliUpdate.set("zgm", zgm);
+                int zhl = zhanDouService.cityZhl(city.getCityId());
+                bingliUpdate.set("zhl", zhl);
+                user = mongoTemplate.findOne(query, User.class);
+                Integer lscl = cityService.lscl(city.getCityId(), user.getLmId());
+                bingliUpdate.set("liangcl", lscl - zhl);
                 mongoTemplate.updateFirst(bingliQuery, bingliUpdate, "user_city");
             }
         }
@@ -252,6 +273,7 @@ public class ZiyuanTask {
     /**
      * 每天定榜发送奖励
      */
+
     @Scheduled(cron = "0 0 0 * * ?")
     public void paihang() {
         paihangService.guimoph();

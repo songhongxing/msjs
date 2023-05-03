@@ -87,12 +87,26 @@ public class ZhanDouService {
             chuzheng.setXjsj(xjsj);
             chuzheng.setCzId(UUID.randomUUID().toString().replaceAll("-", ""));
             mongoTemplate.save(chuzheng);
+            //更改武将的出征状态
+            Query query = new Query(Criteria.where("wjId").is(chuzheng.getCzWjId()));
+            Update update = new Update();
+            update.set("czzt", 1);
+            mongoTemplate.updateFirst(query, update, Wujiang.class);
+            query = new Query(Criteria.where("cityId").is(chuzheng.getCzCityId()));
+            UserCity userCity = mongoTemplate.findOne(query, UserCity.class);
+            Update bdupdate = new Update();
+            bdupdate.set("bb", userCity.getBb() - chuzheng.getBb());
+            bdupdate.set("qb", userCity.getQb() - chuzheng.getQb());
+            bdupdate.set("nb", userCity.getNb() - chuzheng.getNb());
+            bdupdate.set("qq", userCity.getQq() - chuzheng.getQq());
+            bdupdate.set("hq", userCity.getHq() - chuzheng.getHq());
+            bdupdate.set("zq", userCity.getZq() - chuzheng.getZq());
+            bdupdate.set("tsc", userCity.getTsc() - chuzheng.getTsc());
+            bdupdate.set("cc", userCity.getCc() - chuzheng.getCc());
+            bdupdate.set("gb", userCity.getGb() - chuzheng.getGb());
+            mongoTemplate.updateFirst(query, bdupdate, UserCity.class);
         }
-        //更改武将的出征状态
-        Query query = new Query(Criteria.where("wjId").is(chuzheng.getCzWjId()));
-        Update update = new Update();
-        update.set("czzt", 1);
-        mongoTemplate.updateFirst(query, update, Wujiang.class);
+
         return bl;
     }
 
@@ -193,9 +207,11 @@ public class ZhanDouService {
         Query zyQuery = new Query(Criteria.where("czlx").is("增援").and("gdUserId").is(userId));
         Query czQuery = new Query(Criteria.where("czUserId").is(userId));
 
+        Query zywdQuery = new Query(Criteria.where("zyUserId").is(userId));
+        Query wzydQuery = new Query(Criteria.where("userId").is(userId));
         hashMap.put("敌袭", mongoTemplate.count(dxQuery, Chuzheng.class));
-        hashMap.put("出征", mongoTemplate.count(czQuery, Chuzheng.class));
-        hashMap.put("增援", mongoTemplate.count(zyQuery, Chuzheng.class));
+        hashMap.put("出征", (mongoTemplate.count(czQuery, Chuzheng.class) + mongoTemplate.count(wzydQuery, ZengYuan.class)));
+        hashMap.put("增援", (mongoTemplate.count(zyQuery, Chuzheng.class) +  mongoTemplate.count(zywdQuery, ZengYuan.class)));
         return hashMap;
     }
 
@@ -874,14 +890,14 @@ public class ZhanDouService {
     public void fanhui(Chuzheng chuzheng) {
         Query cityQuery = new Query(Criteria.where("cityId").is(chuzheng.getCzCityId()));
         UserCity userCity = mongoTemplate.findOne(cityQuery, UserCity.class);
-        userCity.setBb(userCity.getBb() - chuzheng.getBb());
-        userCity.setQb(userCity.getQb() - chuzheng.getQb());
-        userCity.setNb(userCity.getNb() - chuzheng.getNb());
-        userCity.setQq(userCity.getQq() - chuzheng.getQq());
-        userCity.setHq(userCity.getHq() - chuzheng.getHq());
-        userCity.setZq(userCity.getZq() - chuzheng.getZq());
-        userCity.setCc(userCity.getCc() - chuzheng.getCc());
-        userCity.setTsc(userCity.getTsc() - chuzheng.getTsc());
+        userCity.setBb(userCity.getBb() + chuzheng.getBb());
+        userCity.setQb(userCity.getQb() + chuzheng.getQb());
+        userCity.setNb(userCity.getNb() + chuzheng.getNb());
+        userCity.setQq(userCity.getQq() + chuzheng.getQq());
+        userCity.setHq(userCity.getHq() + chuzheng.getHq());
+        userCity.setZq(userCity.getZq() + chuzheng.getZq());
+        userCity.setCc(userCity.getCc() + chuzheng.getCc());
+        userCity.setTsc(userCity.getTsc() + chuzheng.getTsc());
         Update update = new Update();
         update.set("bb", userCity.getBb());
         update.set("qb", userCity.getQb());
@@ -1295,6 +1311,7 @@ public class ZhanDouService {
 
     /**
      * 计算城市总耗粮
+     * 城池剩余士兵+出征士兵
      *
      * @param cityId
      * @return
@@ -1309,6 +1326,20 @@ public class ZhanDouService {
         if (CollUtil.isNotEmpty(zengYuans)) {
             for (ZengYuan zengYuan : zengYuans) {
                 zhl += GameUtil.zyzhl(zengYuan);
+            }
+        }
+        query = new Query(Criteria.where("czCityId").is(cityId));
+        List<Chuzheng> chuzhengs = mongoTemplate.find(query, Chuzheng.class);
+        if(CollUtil.isNotEmpty(chuzhengs)){
+            for(Chuzheng chuzheng : chuzhengs){
+                zhl += GameUtil.czzhl(chuzheng);
+            }
+        }
+        query = new Query(Criteria.where("zyCityId").is(cityId));
+        List<ZengYuan> zengYuanList = mongoTemplate.find(query, ZengYuan.class);
+        if (CollUtil.isNotEmpty(zengYuanList)) {
+            for (ZengYuan zengyuan : zengYuanList) {
+                zhl += GameUtil.zyzhl(zengyuan);
             }
         }
         return zhl;
@@ -1348,6 +1379,8 @@ public class ZhanDouService {
         chuzheng.setCzWjId(zengYuan.getCzWj());
         chuzheng.setDdsj((int) (DateUtil.currentSeconds() + zengYuan.getXjsj()));
         chuzheng.setBb(zengYuan.getBb());
+        chuzheng.setCzCityName(zengYuan.getCityName());
+        chuzheng.setGdCityName("无");
         chuzheng.setQb(zengYuan.getQb());
         chuzheng.setNb(zengYuan.getNb());
         chuzheng.setQq(zengYuan.getQq());
@@ -1375,5 +1408,19 @@ public class ZhanDouService {
     public List<ZengYuan> wzyd(String userId) {
         Query query = new Query(Criteria.where("userId").is(userId));
         return mongoTemplate.find(query, ZengYuan.class);
+    }
+
+    public void insert() {
+        ZengYuan zengYuan = new ZengYuan();
+        zengYuan.setZyId(GameUtil.uuid());
+        zengYuan.setUserId("82088a587da0417881161c9f6abec89b");
+        zengYuan.setUserName("玩家bec89b");
+        zengYuan.setCityId("8736a02efdc64c859731020527b20ee1");
+        zengYuan.setCityName("新的城市");
+        zengYuan.setZyUserId("2fb89cdaa5f64c6c996af24bd48d9e1d");
+        zengYuan.setZyUserName("咋说的");
+        zengYuan.setZyCityId("12431");
+        zengYuan.setZyCityName("safa");
+        mongoTemplate.save(zengYuan);
     }
 }

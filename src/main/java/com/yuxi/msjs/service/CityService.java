@@ -5,32 +5,8 @@ import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.lang.UUID;
 import cn.hutool.core.map.MapUtil;
 import com.mongodb.client.result.UpdateResult;
-import com.yuxi.msjs.bean.conste.Acsj;
-import com.yuxi.msjs.bean.conste.Ancang;
-import com.yuxi.msjs.bean.conste.Bysj;
-import com.yuxi.msjs.bean.conste.Bzzy;
-import com.yuxi.msjs.bean.conste.Chanliang;
-import com.yuxi.msjs.bean.conste.Cksj;
-import com.yuxi.msjs.bean.conste.Cqsj;
-import com.yuxi.msjs.bean.conste.Jgsj;
-import com.yuxi.msjs.bean.conste.Jianzhu;
-import com.yuxi.msjs.bean.conste.Jssj;
-import com.yuxi.msjs.bean.conste.Lcsj;
-import com.yuxi.msjs.bean.conste.Ntsj;
-import com.yuxi.msjs.bean.conste.Nztsj;
-import com.yuxi.msjs.bean.conste.Rongliang;
-import com.yuxi.msjs.bean.conste.Sksj;
-import com.yuxi.msjs.bean.conste.Tksj;
-import com.yuxi.msjs.bean.conste.Tqtsj;
-import com.yuxi.msjs.bean.entity.Chuzheng;
-import com.yuxi.msjs.bean.entity.HomeUp;
-import com.yuxi.msjs.bean.entity.Meinv;
-import com.yuxi.msjs.bean.entity.SlgMap;
-import com.yuxi.msjs.bean.entity.UserCity;
-import com.yuxi.msjs.bean.entity.UserDaoju;
-import com.yuxi.msjs.bean.entity.Wujiang;
-import com.yuxi.msjs.bean.entity.ZengYuan;
-import com.yuxi.msjs.bean.entity.ZhengBing;
+import com.yuxi.msjs.bean.conste.*;
+import com.yuxi.msjs.bean.entity.*;
 import com.yuxi.msjs.bean.vo.CityList;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
@@ -104,39 +80,24 @@ public class CityService {
         Query query = new Query(Criteria.where("cityId").is(cityId));
         //用户的兵力减去出征的兵力
         UserCity userCity = mongoTemplate.findOne(query, UserCity.class);
-        query = new Query(Criteria.where("czCityId").is(cityId));
-        List<Chuzheng> chuzhengs = mongoTemplate.find(query, Chuzheng.class);
-        if (CollUtil.isNotEmpty(chuzhengs)) {
-            for (Chuzheng chuzheng : chuzhengs) {
-                userCity.setBb(userCity.getBb() - chuzheng.getBb());
-                userCity.setQb(userCity.getQb() - chuzheng.getQb());
-                userCity.setNb(userCity.getNb() - chuzheng.getNb());
-                userCity.setQq(userCity.getQq() - chuzheng.getQq());
-                userCity.setHq(userCity.getHq() - chuzheng.getHq());
-                userCity.setZq(userCity.getZq() - chuzheng.getZq());
-                userCity.setCc(userCity.getCc() - chuzheng.getCc());
-                userCity.setCh(userCity.getCh() - chuzheng.getCh());
-                userCity.setGb(userCity.getGb() - chuzheng.getGb());
-                userCity.setTsc(userCity.getTsc() - chuzheng.getTsc());
+//        query = new Query(Criteria.where("czCityId").is(cityId));
+//        List<Chuzheng> chuzhengs = mongoTemplate.find(query, Chuzheng.class);
+//        if (CollUtil.isNotEmpty(chuzhengs)) {
+//            for (Chuzheng chuzheng : chuzhengs) {
+//                userCity.setBb(userCity.getBb() - chuzheng.getBb());
+//                userCity.setQb(userCity.getQb() - chuzheng.getQb());
+//                userCity.setNb(userCity.getNb() - chuzheng.getNb());
+//                userCity.setQq(userCity.getQq() - chuzheng.getQq());
+//                userCity.setHq(userCity.getHq() - chuzheng.getHq());
+//                userCity.setZq(userCity.getZq() - chuzheng.getZq());
+//                userCity.setCc(userCity.getCc() - chuzheng.getCc());
+//                userCity.setCh(userCity.getCh() - chuzheng.getCh());
+//                userCity.setGb(userCity.getGb() - chuzheng.getGb());
+//                userCity.setTsc(userCity.getTsc() - chuzheng.getTsc());
+//
+//            }
+//        }
 
-            }
-        }
-        query = new Query(Criteria.where("cityId").is(cityId));
-        List<ZengYuan> zengYuans = mongoTemplate.find(query, ZengYuan.class);
-        if (CollUtil.isNotEmpty(zengYuans)) {
-            for (ZengYuan zengyuan : zengYuans) {
-                userCity.setBb(userCity.getBb() - zengyuan.getBb());
-                userCity.setQb(userCity.getQb() - zengyuan.getQb());
-                userCity.setNb(userCity.getNb() - zengyuan.getNb());
-                userCity.setQq(userCity.getQq() - zengyuan.getQq());
-                userCity.setHq(userCity.getHq() - zengyuan.getHq());
-                userCity.setZq(userCity.getZq() - zengyuan.getZq());
-                userCity.setCc(userCity.getCc() - zengyuan.getCc());
-                userCity.setCh(userCity.getCh() - zengyuan.getCh());
-                userCity.setGb(userCity.getGb() - zengyuan.getGb());
-                userCity.setTsc(userCity.getTsc() - zengyuan.getTsc());
-            }
-        }
 
         return userCity;
     }
@@ -146,12 +107,10 @@ public class CityService {
      *
      * @param cityId 城市id
      * @param jzName 建筑名称
-     * @param jzdj   建筑等级
-     * @param sjsj   升级时间
      * @author songhongxing
      * @date 2023/02/28 4:55 下午
      */
-    public List<HomeUp> jzshengji(String cityId, String jzName, Integer jzdj, Integer sjsj) {
+    public List<HomeUp> jzshengji(String cityId, String jzName) {
 
         //根据升级建筑和等级扣减资源
         Query query = new Query(Criteria.where("cityId").is(cityId));
@@ -367,6 +326,34 @@ public class CityService {
         mongoTemplate.updateFirst(query, update, UserCity.class);
         return mongoTemplate.find(query, HomeUp.class);
     }
+
+    /**
+     * 获取粮食产量
+     * @param cityId
+     * @return
+     */
+    public Integer lscl(String cityId, String lmId){
+        Query query =  new Query(Criteria.where("cityId").is(cityId));
+        UserCity userCity = mongoTemplate.findOne(query, UserCity.class);
+        //农田产量
+        Integer chanliang = Chanliang.getChanliang(userCity.getNongtian());
+        //联盟加成
+        if(!"无".equals(lmId)){
+            query = new Query(Criteria.where("lmId").is(lmId));
+            Lianmeng lianmeng = mongoTemplate.findOne(query, Lianmeng.class);
+            chanliang = (int)(chanliang * (lianmeng.getZyscdj() * 0.02+1));
+        }
+        query =  new Query(Criteria.where("cityId").is(cityId));
+        List<SlgMap> slgMaps = mongoTemplate.find(query, SlgMap.class);
+        //占领的农田产量
+        if(CollUtil.isNotEmpty(slgMaps)){
+            for(SlgMap slgMap : slgMaps){
+                chanliang += Shoujun.getZjclz(slgMap.getDkdj());
+            }
+        }
+        return  chanliang;
+    }
+
 
     /**
      * 建筑队列
@@ -627,7 +614,7 @@ public class CityService {
      * @param jyxx
      */
     public void zjwjjy(String wjId, String jyxx) {
-        int zjjy = Integer.valueOf(jyxx.split(",")[0]);
+        int zjjy =  Integer.valueOf(jyxx.split(",")[0]);
         int lwzt = Integer.valueOf(jyxx.split(",")[1]);
         Query query = new Query(Criteria.where("wjId").is(wjId));
         Wujiang wujiang = mongoTemplate.findOne(query, Wujiang.class);
@@ -952,6 +939,13 @@ public class CityService {
         update.set("name", name);
         mongoTemplate.updateFirst(query, update, Meinv.class);
         return mongoTemplate.findOne(query, Meinv.class);
+    }
+
+    public void gaiming(String cityId, String name) {
+        Query query = new Query(Criteria.where("cityId").is(cityId));
+        Update update = new Update();
+        update.set("cityName", name);
+        mongoTemplate.updateFirst(query, update, UserCity.class);
     }
 
 //    public static void main(String[] args) {

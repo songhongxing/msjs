@@ -1,6 +1,7 @@
 package com.yuxi.msjs.util;
 
 import com.yuxi.msjs.bean.conste.Bzzy;
+import com.yuxi.msjs.bean.entity.Chuzheng;
 import com.yuxi.msjs.bean.entity.UserCity;
 import com.yuxi.msjs.bean.entity.ZengYuan;
 
@@ -21,6 +22,9 @@ public class GameUtil {
      * @return
      */
     public static Integer zhl(UserCity userCity){
+        if(userCity == null){
+            return 0;
+        }
         Integer zhl = 0;
         zhl += userCity.getBb() * Bzzy.getHaoliang("步兵");
         zhl += userCity.getQb() * Bzzy.getHaoliang("枪兵");
@@ -32,6 +36,26 @@ public class GameUtil {
         zhl += userCity.getCc() * Bzzy.getHaoliang("冲车");
         zhl += userCity.getTsc() * Bzzy.getHaoliang("投石");
         zhl += userCity.getGb() * Bzzy.getHaoliang("工兵");
+        return zhl;
+    }
+
+    /**
+     * 计算出征总耗粮
+     * @param chuzheng
+     * @return
+     */
+    public static Integer czzhl(Chuzheng chuzheng){
+        Integer zhl = 0;
+        zhl += chuzheng.getBb() * Bzzy.getHaoliang("步兵");
+        zhl += chuzheng.getQb() * Bzzy.getHaoliang("枪兵");
+        zhl += chuzheng.getNb() * Bzzy.getHaoliang("弩兵");
+        zhl += chuzheng.getQq() * Bzzy.getHaoliang("轻骑");
+        zhl += chuzheng.getHq() * Bzzy.getHaoliang("虎骑");
+        zhl += chuzheng.getCh() * Bzzy.getHaoliang("斥候");
+        zhl += chuzheng.getZq() * Bzzy.getHaoliang("重骑");
+        zhl += chuzheng.getCc() * Bzzy.getHaoliang("冲车");
+        zhl += chuzheng.getTsc() * Bzzy.getHaoliang("投石");
+        zhl += chuzheng.getGb() * Bzzy.getHaoliang("工兵");
         return zhl;
     }
 

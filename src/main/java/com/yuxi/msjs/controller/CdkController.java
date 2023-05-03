@@ -2,6 +2,7 @@ package com.yuxi.msjs.controller;
 
 import cn.hutool.core.collection.ListUtil;
 import cn.hutool.json.JSONUtil;
+import com.yuxi.msjs.bean.entity.CDK;
 import com.yuxi.msjs.bean.entity.UserDaoju;
 import com.yuxi.msjs.bean.entity.UserZb;
 import com.yuxi.msjs.service.CdkService;
@@ -41,16 +42,20 @@ public class CdkController extends BaseController {
      * @author songhongxing
      * @date 2023/03/03 11:34 上午
      */
-    @PostMapping("/use")
+    @GetMapping("/use")
     public HjArray use(String cdk,String userId) {
         List<UserDaoju> sycdk = cdkService.sycdk(cdk, userId);
         return arrayUtil.toArray(sycdk, sycdk.size(), UserDaoju.class);
-
     }
 
-    @PostMapping("/check")
+    @GetMapping("/check")
     public Integer check(String cdk,String userId){
        return cdkService.ckeckcdk(cdk, userId);
+    }
+
+    @PostMapping("/insert")
+    public void insert(CDK cdk){
+        cdkService.insert(cdk);
     }
 
 }

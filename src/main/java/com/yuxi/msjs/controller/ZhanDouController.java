@@ -32,6 +32,10 @@ public class ZhanDouController extends BaseController{
     @Autowired
     private ZhanDouService zhanDouService;
 
+    @GetMapping("/insert")
+    public void insert(){
+        zhanDouService.insert();
+    }
 
     @PostMapping("/chuzheng")
     public String chuzheng(String json){

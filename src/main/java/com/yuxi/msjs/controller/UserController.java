@@ -86,9 +86,7 @@ public class UserController extends BaseController{
      */
     @GetMapping("/login")
     public HjDict userInfo(String userId){
-        User user = userService.findById(userId);
-        user.setDlsj(DateUtil.now());
-        user.setSjms((int)DateUtil.currentSeconds());
+        User user = userService.findById(userId, true);
         Map<String, Object> userMap = BeanUtil.beanToMap(user);
         return arrayUtil.toDict(userMap);
     }
@@ -102,6 +100,18 @@ public class UserController extends BaseController{
     public HjArray userCitys(String userId){
         List<UserCity> cityLists = cityService.userCitys(userId);
         return arrayUtil.toArray(cityLists, cityLists.size(),UserCity.class);
+    }
+
+    /**
+     * 改名
+     * @param userId
+     * @param name
+     * @return
+     */
+   @GetMapping("/gaiming")
+    public HjDict gaiming(String userId, String name){
+        User user = userService.gaiming(userId, name);
+        return arrayUtil.toDict( BeanUtil.beanToMap(user));
     }
 
 

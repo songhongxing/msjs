@@ -33,9 +33,9 @@ public class User {
     @Field
     private Integer lmgx = 0;//联盟贡献 9
     @Field
-    private String dlsj;//登录时间 10
+    private String dlsj = "";//登录时间 10
     @Field
-    private Integer sjms;//时间秒数 11
+    private Integer sjms = 0;//时间秒数 11
     @Field
     private Integer ggcs = 0;//广告经验 12
     @Field
@@ -54,5 +54,7 @@ public class User {
     private Integer ccsl = 1;//城池数量 19
     @Field
     private Integer zgm = 0;//城池总规模 20
+    @Field
+    private Integer xdl = 0;//新登录 21
 
 }

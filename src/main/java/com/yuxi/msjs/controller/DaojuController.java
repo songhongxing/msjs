@@ -1,7 +1,9 @@
 package com.yuxi.msjs.controller;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.ListUtil;
 import cn.hutool.json.JSONUtil;
+import com.yuxi.msjs.bean.entity.User;
 import com.yuxi.msjs.bean.entity.UserDaoju;
 import com.yuxi.msjs.bean.entity.UserZb;
 import com.yuxi.msjs.service.DaojuService;
@@ -74,7 +76,7 @@ public class DaojuController extends BaseController {
      */
     @GetMapping("/use")
     public HjDict usedj(String userId, String name, Integer sl) {
-        daojuService.djsy(userId, name, sl);
+        daojuService. djsy(userId, name, sl);
         Map<String, Object> djsl = daojuService.djsl(userId);
         return arrayUtil.toDict(djsl);
     }
@@ -114,10 +116,24 @@ public class DaojuController extends BaseController {
      * 装备列表
      * @param userId
      */
- @GetMapping("/zblb")
+    @GetMapping("/zblb")
     public HjArray zblb(String userId, String zblx){
         List<UserZb> userZbs = zhuangbServicce.find(userId, zblx);
      return arrayUtil.toArray(userZbs, userZbs.size(), UserZb.class);
+    }
+
+    /**
+     * 购买道具
+     * @param userId
+     * @param daojuName
+     * @param gg
+     * @param hblx
+     * @return
+     */
+    @GetMapping("/gmdj")
+    public HjDict gmdj(String userId,String daojuName, Integer gg, String hblx){
+        User gmdj = daojuService.gmdj(userId,daojuName, gg, hblx);
+        return arrayUtil.toDict(BeanUtil.beanToMap(gmdj));
     }
 
 

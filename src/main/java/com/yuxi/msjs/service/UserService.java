@@ -1,5 +1,6 @@
 package com.yuxi.msjs.service;
 
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.lang.UUID;
 import cn.hutool.core.util.RandomUtil;
 import com.mongodb.client.result.UpdateResult;
@@ -82,7 +83,8 @@ public class UserService {
      * @return
      */
     public User userInfo(String userId){
-        return mongoTemplate.findById(userId, User.class);
+        Query query = new Query(Criteria.where("userId").is(userId));
+        return mongoTemplate.findOne(query, User.class);
     }
 
     /**
@@ -105,13 +107,37 @@ public class UserService {
     }
 
 
-    public User findById(String userId) {
+    public User findById(String userId, boolean gxsj) {
         Query query = new Query(Criteria.where("userId").is(userId));
-        return mongoTemplate.findOne(query, User.class);
+        if(gxsj){
+            Update update = new Update();
+            update.set("dlsj",DateUtil.now());
+            update.set("sjms",(int)DateUtil.currentSeconds());
+            mongoTemplate.updateFirst(query, update, User.class);
+        }
+        User user = mongoTemplate.findOne(query, User.class);
+        Update update = new Update();
+        update.set("xdl",1);
+        mongoTemplate.updateFirst(query, update, User.class);
+        return user;
     }
 
     public Long zhcheck(String zh) {
         Query zhanghao = new Query(Criteria.where("zh").is(zh));
         return mongoTemplate.count(zhanghao, ZhangHao.class);
+    }
+
+    /**
+     * 改名
+     * @param userId
+     * @param name
+     */
+    public User gaiming(String userId, String name) {
+        Query query = new Query(Criteria.where("userId").is(userId));
+        Update update = new Update();
+        update.set("name", name);
+        mongoTemplate.updateFirst(query, update, User.class);
+        return findById(userId, false);
+
     }
 }

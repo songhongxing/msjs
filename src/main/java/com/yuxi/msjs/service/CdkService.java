@@ -52,25 +52,42 @@ public class CdkService {
             list.add(new UserDaoju(userId, bean.getJl5().split("\\*")[0], Integer.valueOf(bean.getJl5().split("\\*")[1])));
         }
         daojuService.insert(list);
+        UserCdk userCdk = new UserCdk();
+        userCdk.setCdk(cdk);
+        userCdk.setUserId(userId);
+        mongoTemplate.save(userCdk);
         return list;
     }
 
     /**
-     * 检测cdk是否用过
+     * 检测cdk是否用过 0 不存在，1可使用 2已使用过
      * @param cdk
      * @param userId
      */
     public Integer ckeckcdk(String cdk, String userId){
-        Query query = new Query(Criteria.where("cdk").is(cdk).and("userId").is(userId));
-        UserCdk one = mongoTemplate.findOne(query, UserCdk.class);
-        return one == null ? 0 : 1;
+        Query query  = new Query(Criteria.where("cdk").is(cdk));
+        CDK cdk1 = mongoTemplate.findOne(query, CDK.class);
+        if(cdk1 != null){
+            query = new Query(Criteria.where("cdk").is(cdk).and("userId").is(userId));
+            UserCdk one = mongoTemplate.findOne(query, UserCdk.class);
+            return one == null ? 1 : 2;
+        } else {
+            return 0;
+        }
     }
 
     /**
      * 删除过期的cdk
      */
     public void gqcdk(){
-        Query query = new Query(Criteria.where("gqsj").lte(DateUtil.currentSeconds()));
+        Query query = new Query(Criteria.where("gqsj").lte(DateUtil.currentSeconds()).andOperator(Criteria.where("gqsj").gt(0)));
         mongoTemplate.remove(query, CDK.class);
+    }
+
+    public void insert(CDK cdk) {
+        if(cdk.getGqsj() != 0){
+            cdk.setGqsj((int)(DateUtil.currentSeconds() + cdk.getGqsj() * 24 * 3600));
+        }
+        mongoTemplate.save(cdk);
     }
 }

@@ -20,11 +20,16 @@ public class HuobiService {
     @Autowired
     private MongoTemplate mongoTemplate;
 
-    public void huobi(String userId, Integer hj){
+    public void huobi(String userId, Integer hj, String hblx){
         Query query = new Query(Criteria.where("userId").is(userId));
         User user = mongoTemplate.findOne(query, User.class);
         Update update = new Update();
-        update.set("hj", user.getHj() + hj);
+        if("hj".equals(hblx)){
+            update.set("hj", user.getHj() + hj);
+        } else {
+            update.set("sw", user.getSw() + hj);
+        }
+
         mongoTemplate.updateFirst(query, update, User.class);
     }
 }
