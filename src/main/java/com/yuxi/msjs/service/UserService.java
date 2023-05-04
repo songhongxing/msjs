@@ -137,6 +137,11 @@ public class UserService {
         Update update = new Update();
         update.set("name", name);
         mongoTemplate.updateFirst(query, update, User.class);
+        //修改地图上的名称
+        query = new Query(Criteria.where("sswjId").is(userId));
+        update = new Update();
+        update.set("sswjName", name);
+        mongoTemplate.updateFirst(query, update, SlgMap.class);
         return findById(userId, false);
 
     }

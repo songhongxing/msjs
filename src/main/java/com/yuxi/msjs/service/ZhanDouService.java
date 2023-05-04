@@ -1423,4 +1423,32 @@ public class ZhanDouService {
         zengYuan.setZyCityName("safa");
         mongoTemplate.save(zengYuan);
     }
+
+    /**
+     * 设置免战牌
+     * @param cityId
+     */
+    public void mz(String cityId) {
+        Query query = new Query(Criteria.where("cityId").is(cityId));
+        SlgMap slgMap = mongoTemplate.findOne(query, SlgMap.class);
+        Update update = new Update();
+        update.set("mzbz",1);
+        if(slgMap.getMzdq() != 0){
+            update.set("mzdq",slgMap.getMzdq() + 8*3600);
+        } else {
+            update.set("mzdq", DateUtil.currentSeconds() + 8*3600);
+        }
+    }
+
+    /**
+     * 修改免战到期的状态
+     */
+    public void mzdq(){
+        Query query = new Query(Criteria.where("mzdq").lte(DateUtil.currentSeconds()).andOperator(Criteria.where("mzdq").ne(0)));
+        Update update = new Update();
+        update.set("mzbz", 0);
+        update.set("mzdq", 0);
+        mongoTemplate.updateFirst(query, update, SlgMap.class);
+    }
+
 }

@@ -115,5 +115,9 @@ public class ZhanDouController extends BaseController{
     }
 
 
+    @GetMapping("/mz")
+    public void mz(String cityId){
+        zhanDouService.mz(cityId);
+    }
 
 }

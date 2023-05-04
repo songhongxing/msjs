@@ -143,6 +143,16 @@ public class ZiyuanTask {
     }
 
     /**
+     * 免战回复
+     * @author songhongxing
+     * @date 2023/03/01 1:22 下午
+     */
+    @Scheduled(cron = "0 0/1 * * * ?")
+    public void mianzhan(){
+      zhanDouService.mzdq();
+    }
+
+    /**
      * 征兵队列
      *
      * @author songhongxing

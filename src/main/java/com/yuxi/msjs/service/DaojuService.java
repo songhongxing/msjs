@@ -4,6 +4,7 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.ListUtil;
 import com.yuxi.msjs.bean.conste.Daoju;
 import com.yuxi.msjs.bean.entity.User;
+import com.yuxi.msjs.bean.entity.UserCity;
 import com.yuxi.msjs.bean.entity.UserDaoju;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -86,6 +87,37 @@ public class DaojuService {
         } else if ("大袋黄金".equals(name)) {
             huobiService.huobi(userId, 200 * sl, "hj");
         }
+    }
+
+    /**
+     * 使用道具增加资源
+     * @param cityId
+     * @param djname  数量
+     */
+    public Map<String, Object> zjzy(String userId, String cityId, String djname){
+        Query djQuery = new Query(Criteria.where("userId").is(userId).and("name").is(djname));
+        UserDaoju userDaoju = mongoTemplate.findOne(djQuery, UserDaoju.class);
+        if(userDaoju == null){
+            return djsl(userId);
+        }
+        int zysl = 0;
+        if("大箱资源".equals(djname)){
+            zysl = 200000;
+        } else {
+            zysl = 50000;
+        }
+        Query query = new Query(Criteria.where("cityId").is(cityId));
+        UserCity userCity = mongoTemplate.findOne(query, UserCity.class);
+        Update update = new Update();
+        update.set("mucc", userCity.getMucc() + zysl > userCity.getCkcc() ? userCity.getCkcc() : userCity.getMucc() + zysl);
+        update.set("tiecc", userCity.getTiecc() + zysl > userCity.getCkcc() ? userCity.getCkcc() : userCity.getTiecc() + zysl);
+        update.set("shicc", userCity.getShicc() + zysl > userCity.getCkcc() ? userCity.getCkcc() : userCity.getShicc() + zysl);
+        update.set("liangcc", userCity.getLiangcc() + zysl > userCity.getLccc() ? userCity.getLccc() : userCity.getLiangcc() + zysl);
+        mongoTemplate.updateFirst(query, update, UserCity.class);
+        update = new Update();
+        update.set("sl", userDaoju.getSl() - 1);
+        mongoTemplate.updateFirst(djQuery, update, UserDaoju.class);
+        return djsl(userId);
     }
 
     public Map<String, Object> djsl(String userId){

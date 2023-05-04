@@ -136,5 +136,17 @@ public class DaojuController extends BaseController {
         return arrayUtil.toDict(BeanUtil.beanToMap(gmdj));
     }
 
+    /**
+     * 使用资源箱增加资源
+     * @param userId
+     * @param cityId
+     * @param djName
+     * @return
+     */
+    public HjDict zjzy(String userId, String cityId, String djName){
+        Map<String, Object> zjzy = daojuService.zjzy(userId, cityId, djName);
+        return arrayUtil.toDict(zjzy);
+    }
+
 
 }

@@ -29,7 +29,10 @@ public class HuobiService {
         } else {
             update.set("sw", user.getSw() + hj);
         }
-
         mongoTemplate.updateFirst(query, update, User.class);
+    }
+
+    public void zyzj (){
+
     }
 }

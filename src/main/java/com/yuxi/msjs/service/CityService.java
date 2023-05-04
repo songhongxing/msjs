@@ -51,6 +51,9 @@ public class CityService {
         update.set("dkmc", userName);
         update.set("sswjId", userId);
         update.set("sswjName", userName);
+        //新手保护期3天
+        update.set("mzbz", 2);
+        update.set("mzdq", (int) (DateUtil.currentSeconds() + 3*24* 3600));
         UpdateResult updateResult = mongoTemplate.updateFirst(query, update,"slg_map");
         assert updateResult.wasAcknowledged();
 
@@ -946,6 +949,11 @@ public class CityService {
         Update update = new Update();
         update.set("cityName", name);
         mongoTemplate.updateFirst(query, update, UserCity.class);
+        //修改地图上的名称
+        query = new Query(Criteria.where("cityId").is(cityId));
+        update = new Update();
+        update.set("dkmc", name);
+        mongoTemplate.updateFirst(query, update, SlgMap.class);
     }
 
 //    public static void main(String[] args) {

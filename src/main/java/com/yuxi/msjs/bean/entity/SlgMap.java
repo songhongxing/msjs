@@ -36,10 +36,10 @@ public class SlgMap {
     @Field
     private Integer dksj;//4
     /**
-     * 免战标志(0可攻打,1免战牌)
+     * 免战标志(0可攻打,1免战牌,2新手保护期)
      */
     @Field
-    private Integer mzbz;//5
+    private Integer mzbz = 0;//5
     /**
      * 所属玩家id
      */
@@ -51,10 +51,10 @@ public class SlgMap {
     @Field
     private String sswjName = "";//7
     /**
-     * 免战到期
+     * 免战到期时间
      */
     @Field
-    private Long mzdq = 0L;//8
+    private Integer mzdq = 0;//8
     @Field
     private String lmId="";//联盟id9
     @Field
