@@ -1,5 +1,6 @@
 package com.yuxi.msjs.bean.entity;
 
+import cn.hutool.core.date.DateUtil;
 import lombok.Data;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
@@ -15,12 +16,13 @@ import org.springframework.data.mongodb.core.mapping.Field;
 public class HomeUp {
 
     @Field
-    private String cityId;
+    private String cityId;//0
     @Field
-    private String jzName;//建筑名称
+    private String jzName;//建筑名称1
     @Field
-    private Integer jzdj;//建筑等级
+    private Integer jzdj;//建筑等级2
     @Field
-    private Integer dqsj;//完成时间
+    private Integer dqsj;//完成时间3
+    private Integer sysj;//剩余时间4
 
 }

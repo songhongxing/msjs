@@ -1,6 +1,8 @@
 package com.yuxi.msjs.controller;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.date.DateUtil;
 import com.yuxi.msjs.bean.entity.HomeUp;
 import com.yuxi.msjs.bean.entity.Meinv;
 import com.yuxi.msjs.bean.entity.SlgMap;
@@ -75,6 +77,11 @@ public class CityController extends BaseController{
     @GetMapping("/jzdl")
     public HjArray jianzhusj(String cityId){
         List<HomeUp> sjwc = cityService.jzdl(cityId);
+        if(CollUtil.isNotEmpty(sjwc)){
+            for (HomeUp homeUp : sjwc){
+                homeUp.setSysj((int) (homeUp.getDqsj() - DateUtil.currentSeconds()));
+            }
+        }
         return  arrayUtil.toArray(sjwc, sjwc.size(), HomeUp.class);
     }
 

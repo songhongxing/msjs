@@ -114,7 +114,6 @@ public class CityService {
      * @date 2023/02/28 4:55 下午
      */
     public List<HomeUp> jzshengji(String cityId, String jzName) {
-
         //根据升级建筑和等级扣减资源
         Query query = new Query(Criteria.where("cityId").is(cityId));
         UserCity userCity = mongoTemplate.findOne(query, UserCity.class);

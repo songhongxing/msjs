@@ -128,9 +128,9 @@ public class ZiyuanTask {
      * @author songhongxing
      * @date 2023/03/01 1:22 下午
      */
-    @Scheduled(cron = "0 0/1 * * * ?")
+    @Scheduled(cron = "0 0/30 * * * ?")
     public void jianzhusj(){
-        Query query = new Query(Criteria.where("dasj").lte(System.currentTimeMillis()/1000));
+        Query query = new Query(Criteria.where("dqsj").lte(DateUtil.currentSeconds()));
         List<HomeUp> homeUpList = mongoTemplate.find(query, HomeUp.class);
         if (CollUtil.isEmpty(homeUpList)) {
             return;

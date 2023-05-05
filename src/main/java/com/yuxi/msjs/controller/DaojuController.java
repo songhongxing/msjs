@@ -143,6 +143,7 @@ public class DaojuController extends BaseController {
      * @param djName
      * @return
      */
+    @GetMapping("/zjzy")
     public HjDict zjzy(String userId, String cityId, String djName){
         Map<String, Object> zjzy = daojuService.zjzy(userId, cityId, djName);
         return arrayUtil.toDict(zjzy);
