@@ -585,7 +585,7 @@ public class CityService {
         Integer olddj = wujiang.getDj();//当前等级
         Integer xdj = olddj;//新等级
         Integer sxjy = wujiang.getSjsx();
-        while (jy >= sxjy) {
+        while (jy >= sxjy && xdj<50) {
             sxjy = 10000 + 200 * olddj * olddj;
             jy = jy - sxjy;
             xdj += 1;

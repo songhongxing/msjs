@@ -158,7 +158,7 @@ public class ZiyuanTask {
      * @author songhongxing
      * @date 2023/03/02 4:05 下午
      */
-    @Scheduled(cron = "0 0/1 * * * ?")
+    @Scheduled(cron = "0 0/30 * * * ?")
     public void zhengbing() {
         List<ZhengBing> zbdl = mongoTemplate.findAll(ZhengBing.class);
         if (CollUtil.isEmpty(zbdl)) {

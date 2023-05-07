@@ -203,7 +203,7 @@ public class CityController extends BaseController{
      */
     @GetMapping("/wjjy")
     public HjArray zjjyz(String wjId, Integer sl){
-        List<Wujiang> wjjy = cityService.wjjy(wjId, sl * 5000);
+        List<Wujiang> wjjy = cityService.wjjy(wjId, sl);
         return arrayUtil.toArray(wjjy, wjjy.size(), Wujiang.class);
     }
 
