@@ -155,9 +155,22 @@ public class LianmengController extends BaseController{
      * @return
      */
     @GetMapping("/tclm")
-    public HjDict tclm(String lmId, String userId){
+    public void tclm(String lmId, String userId){
         lianmengService.tclm(lmId, userId);
-        return null;
     }
 
+    @GetMapping("/rmgz")
+    public Long rmgz(String lmId, String userId){
+       return lianmengService.rmgz(lmId, userId);
+    }
+
+    /**
+     * 副盟数量
+     * @param lmId
+     * @return
+     */
+    @GetMapping("/fmsl")
+    public Long rmgz(String lmId){
+        return lianmengService.fmsl(lmId);
+    }
 }

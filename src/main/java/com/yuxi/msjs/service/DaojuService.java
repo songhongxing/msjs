@@ -94,7 +94,7 @@ public class DaojuService {
      * @param cityId
      * @param djname  数量
      */
-    public Map<String, Object> zjzy(String userId, String cityId, String djname){
+    public Map<String, Object> zjzy(String userId, String cityId, String djname, Integer sl){
         Query djQuery = new Query(Criteria.where("userId").is(userId).and("name").is(djname));
         UserDaoju userDaoju = mongoTemplate.findOne(djQuery, UserDaoju.class);
         if(userDaoju == null){
@@ -102,9 +102,9 @@ public class DaojuService {
         }
         int zysl = 0;
         if("大箱资源".equals(djname)){
-            zysl = 200000;
+            zysl = 200000 * sl;
         } else {
-            zysl = 50000;
+            zysl = 50000 * sl;
         }
         Query query = new Query(Criteria.where("cityId").is(cityId));
         UserCity userCity = mongoTemplate.findOne(query, UserCity.class);

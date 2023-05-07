@@ -144,8 +144,8 @@ public class DaojuController extends BaseController {
      * @return
      */
     @GetMapping("/zjzy")
-    public HjDict zjzy(String userId, String cityId, String djName){
-        Map<String, Object> zjzy = daojuService.zjzy(userId, cityId, djName);
+    public HjDict zjzy(String userId, String cityId, String djName, Integer sl){
+        Map<String, Object> zjzy = daojuService.zjzy(userId, cityId, djName, sl);
         return arrayUtil.toDict(zjzy);
     }
 

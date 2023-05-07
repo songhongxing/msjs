@@ -91,9 +91,6 @@ public class ZiyuanTask {
             update.set("shicc", userCity.getShicc());
             update.set("tiecc", userCity.getTiecc());
             update.set("liangcc", userCity.getLiangcc() < 0 ? 0 : userCity.getLiangcc());
-//            UpdateResult updateResult = mongoTemplate.updateFirst(query, update, "user_city");
-//            assert updateResult.wasAcknowledged();
-
             Pair<Query, Update> updatePair = Pair.of(query, update);
             updateList.add(updatePair);
         }
@@ -112,13 +109,17 @@ public class ZiyuanTask {
             Query updateQuery;
             Update update;
             List<Pair<Query, Update>> updateList = new ArrayList<>(slgMaps.size());
-            BulkOperations operations = mongoTemplate.bulkOps(BulkOperations.BulkMode.UNORDERED, "user_city");
+            BulkOperations operations = mongoTemplate.bulkOps(BulkOperations.BulkMode.UNORDERED, "slg_map");
             for(SlgMap slgMap : slgMaps){
-                updateQuery = new Query(Criteria.where("id").is(slgMap.getId()));
+                updateQuery = new Query(Criteria.where("_id").is(slgMap.getId()));
                 update = new Update();
                 update.set("hfsj",0);
                 update.set("dksj", Shoujun.getKeyByValue(slgMap.getDkdj()));
+                Pair<Query, Update> updatePair = Pair.of(updateQuery, update);
+                updateList.add(updatePair);
             }
+            operations.upsert(updateList);
+            BulkWriteResult execute = operations.execute();
         }
 
     }
@@ -158,7 +159,7 @@ public class ZiyuanTask {
      * @author songhongxing
      * @date 2023/03/02 4:05 下午
      */
-    @Scheduled(cron = "0 0/30 * * * ?")
+    @Scheduled(cron = "0/30 * * * * ?")
     public void zhengbing() {
         List<ZhengBing> zbdl = mongoTemplate.findAll(ZhengBing.class);
         if (CollUtil.isEmpty(zbdl)) {
@@ -169,27 +170,29 @@ public class ZiyuanTask {
         UserCity userCity;
         for (ZhengBing zhengBing : zbdl) {
             //判断是否征兵完成
-            if (DateUtil.currentSeconds() >= zhengBing.getJssj()) {
-                query = new Query(Criteria.where("cityId").is(zhengBing.getCityId()));
-                userCity = mongoTemplate.findOne(query, UserCity.class);
-                //当前时间大于征兵结束时间后,把这个兵力加到城市中
-                update = new Update();
-                String zd = Bingzhong.getKeyByValue(zhengBing.getBz());
-                int zbsl = getSl(userCity, zd) + zhengBing.getSl();
-                update.set(zd, zbsl);
-                mongoTemplate.updateFirst(query, update, "user_city");
-                query.addCriteria(Criteria.where("bz").is(zhengBing.getBz()));
+            query = new Query(Criteria.where("cityId").is(zhengBing.getCityId()));
+            userCity = mongoTemplate.findOne(query, UserCity.class);
+            //计算征兵了多久
+            int zbhf = (int) DateUtil.currentSeconds() - zhengBing.getKssj();
+            //计算征了几个
+            int yzm = (int) (zbhf / zhengBing.getDghs());
+            //获取兵种简称
+            String bzjc = Bingzhong.getKeyByValue(zhengBing.getBz());
+            //获取兵种的数量
+            int zbsl = getSl(userCity, bzjc) + yzm;
+            update = new Update();
+            update.set(bzjc, zbsl);
+            mongoTemplate.updateFirst(query, update, "user_city");
+            query = new Query(Criteria.where("cityId").is(zhengBing.getCityId()).and("bz").is(zhengBing.getBz()));
+            update = new Update();
+            if(zhengBing.getSl() - yzm < 0){
+                update.set("sl", zhengBing.getSl());
                 mongoTemplate.remove(query,"zhengbing");
-            } else {
-                //计算征兵了多久
-                int zbhf = (int) DateUtil.currentSeconds() - zhengBing.getKssj();
-                //计算征了几个
-                int yzm = (int) (zbhf / zhengBing.getDghs());
-                query = new Query(Criteria.where("cityId").is(zhengBing.getCityId()).and("bz").is(zhengBing.getBz()));
-                update = new Update();
-                update.set("yzm", yzm);
-                mongoTemplate.updateFirst(query, update, "zhengbing");
+            }else {
+                update.set("kssj", (int) DateUtil.currentSeconds());
+                update.set("sl", zhengBing.getSl() - yzm);
             }
+            mongoTemplate.updateFirst(query, update, "zhengbing");
 
         }
     }
@@ -224,9 +227,17 @@ public class ZiyuanTask {
                 int zhl = zhanDouService.cityZhl(city.getCityId());
                 bingliUpdate.set("zhl", zhl);
                 user = mongoTemplate.findOne(query, User.class);
-                Integer lscl = cityService.lscl(city.getCityId(), user.getLmId());
-                bingliUpdate.set("liangcl", lscl - zhl);
-                mongoTemplate.updateFirst(bingliQuery, bingliUpdate, "user_city");
+                if(city.getCityId() != null){
+                    Integer lscl = cityService.lscl(city.getCityId(), user.getLmId(),"农田");
+                    bingliUpdate.set("liangcl", lscl - zhl);
+                    Integer tiecl = cityService.lscl(city.getCityId(), user.getLmId(),"铁矿");
+                    bingliUpdate.set("tiecl", tiecl);
+                    Integer shicl = cityService.lscl(city.getCityId(), user.getLmId(),"石矿");
+                    bingliUpdate.set("shicl", shicl);
+                    Integer mucl = cityService.lscl(city.getCityId(), user.getLmId(),"林场");
+                    bingliUpdate.set("mucl", mucl);
+                    mongoTemplate.updateFirst(bingliQuery, bingliUpdate, "user_city");
+                }
             }
         }
     }
@@ -297,7 +308,7 @@ public class ZiyuanTask {
     /**
      * 每半小时统计一次规模
      */
-    @Scheduled(cron = "0 0/30 * * * ?")
+    @Scheduled(cron = "0 0/60 * * * ?")
     public void tjgm() {
         paihangService.tjgm();
     }
@@ -341,8 +352,6 @@ public class ZiyuanTask {
             } else if ("返回".equals(chuzheng.getCzlx())) {
                 zhanDouService.fanhui(chuzheng);
             }
-//            lock.remove(chuzheng.getCzId());
-            mongoTemplate.remove(query, Chuzheng.class);
         }
     }
 }

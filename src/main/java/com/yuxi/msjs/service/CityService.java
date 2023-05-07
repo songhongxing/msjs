@@ -292,29 +292,21 @@ public class CityService {
         update.set("zgm", userCity.getZgm() + 1);
         //如果是资源田的升级,需要更新产量
         if (jzName.equals("农田")) {
-            Integer liangcl = userCity.getLiangcl();//当前产量
-            Integer oldchanliang = Chanliang.getChanliang(userCity.getNongtian());//上一级的产量
             Integer newchanliang = Chanliang.getChanliang(userCity.getNongtian() + 1);//下一级的产量
-            newchanliang = liangcl - oldchanliang + newchanliang;
-            update.set("liangcl", newchanliang);
+            Integer jccl = (int)(newchanliang * userCity.getLiangjc());
+            update.set("liangjccl", jccl);
         } else if (jzName.equals("林场")) {
-            Integer cl = userCity.getMucl();//当前产量
-            Integer oldchanliang = Chanliang.getChanliang(userCity.getLinchang());//上一级的产量
             Integer newchanliang = Chanliang.getChanliang(userCity.getLinchang() + 1);//下一级的产量
-            newchanliang = cl - oldchanliang + newchanliang;
-            update.set("mucl", newchanliang);
+            Integer jccl = (int)(newchanliang * userCity.getMujc());
+            update.set("liangjccl", jccl);
         } else if (jzName.equals("石矿")) {
-            Integer cl = userCity.getShicl();//当前产量
-            Integer oldchanliang = Chanliang.getChanliang(userCity.getShikuang());//上一级的产量
             Integer newchanliang = Chanliang.getChanliang(userCity.getShikuang() + 1);//下一级的产量
-            newchanliang = cl - oldchanliang + newchanliang;
-            update.set("shicl", newchanliang);
+            Integer jccl = (int)(newchanliang * userCity.getShijc());
+            update.set("liangjccl", jccl);
         } else if (jzName.equals("铁矿")) {
-            Integer cl = userCity.getTiecl();//当前产量
-            Integer oldchanliang = Chanliang.getChanliang(userCity.getTiekuang());//上一级的产量
             Integer newchanliang = Chanliang.getChanliang(userCity.getTiekuang() + 1);//下一级的产量
-            newchanliang = cl - oldchanliang + newchanliang;
-            update.set("tiecl", newchanliang);
+            Integer jccl = (int)(newchanliang * userCity.getTiejc());
+            update.set("liangjccl", jccl);
         } else if (jzName.equals("仓库")) {
             Integer rl = Rongliang.getRongliang(userCity.getCk() + 1);
             update.set("ckcc", rl);
@@ -330,22 +322,37 @@ public class CityService {
     }
 
     /**
-     * 获取粮食产量
+     * 获取各资源产量
      * @param cityId
+     * @param lx  资源类型
      * @return
      */
-    public Integer lscl(String cityId, String lmId){
+    public Integer lscl(String cityId, String lmId, String lx){
         Query query =  new Query(Criteria.where("cityId").is(cityId));
         UserCity userCity = mongoTemplate.findOne(query, UserCity.class);
-        //农田产量
-        Integer chanliang = Chanliang.getChanliang(userCity.getNongtian());
+        Integer chanliang=0;
+        if("农田".equals(lx)){
+            //农田产量
+            chanliang = Chanliang.getChanliang(userCity.getNongtian());
+            //美女加成
+            chanliang += userCity.getLiangjccl();
+        } else if("铁矿".equals(lx)){
+            chanliang = Chanliang.getChanliang(userCity.getTiekuang());
+            chanliang += userCity.getTiejccl();
+        } else if("林场".equals(lx)){
+            chanliang = Chanliang.getChanliang(userCity.getLinchang());
+            chanliang += userCity.getMujccl();
+        } else if("石矿".equals(lx)){
+            chanliang = Chanliang.getChanliang(userCity.getShikuang());
+            chanliang += userCity.getShijccl();
+        }
         //联盟加成
         if(!"无".equals(lmId)){
             query = new Query(Criteria.where("lmId").is(lmId));
             Lianmeng lianmeng = mongoTemplate.findOne(query, Lianmeng.class);
             chanliang = (int)(chanliang * (lianmeng.getZyscdj() * 0.02+1));
         }
-        query =  new Query(Criteria.where("cityId").is(cityId));
+        query =  new Query(Criteria.where("cityId").is(cityId).and("dklx").is(lx));
         List<SlgMap> slgMaps = mongoTemplate.find(query, SlgMap.class);
         //占领的农田产量
         if(CollUtil.isNotEmpty(slgMaps)){
@@ -500,34 +507,38 @@ public class CityService {
         mongoTemplate.updateFirst(query, update, Meinv.class);
         Update cityUpdate = new Update();
         if (meinv.getGz().equals("林务官")) {
-            city.setMujc(city.getMujc() + meinv.getLy() / 100D);
+            city.setMujc(city.getMujc() + sxd / 100D);
             city.setMujccl((int) (city.getMucl() * city.getMujc()));
             city.setMucl(city.getMucl() + city.getMujccl());
             cityUpdate.set("mujc", city.getMujc());
             cityUpdate.set("mujccl", city.getMujccl());
+            mongoTemplate.updateFirst(cityQuery, cityUpdate, UserCity.class);
         } else if (meinv.getGz().equals("石务官")) {
-            city.setShijc(city.getShijc() + meinv.getSc() / 100D);
+            city.setShijc(city.getShijc() + sxd / 100D);
             city.setShijccl((int) (city.getShicl() * city.getShijc()));
             city.setShicl(city.getShicl() + city.getShijccl());
             cityUpdate.set("shijc", city.getShijc());
             cityUpdate.set("shijccl", city.getShijccl());
+            mongoTemplate.updateFirst(cityQuery, cityUpdate, UserCity.class);
         } else if (meinv.getGz().equals("铁务官")) {
-            city.setTiejc(city.getTiejc() + meinv.getZl() / 100D);
+            city.setTiejc(city.getTiejc() + sxd / 100D);
             city.setTiejccl((int) (city.getTiecl() * city.getTiejc()));
             city.setTiecl(city.getTiecl() + city.getTiejccl());
             cityUpdate.set("tiejc", city.getTiejc());
             cityUpdate.set("tiejccl", city.getTiejccl());
+            mongoTemplate.updateFirst(cityQuery, cityUpdate, UserCity.class);
         } else if (meinv.getGz().equals("粮务官")) {
-            city.setLiangjc(city.getLiangjc() + meinv.getCy() / 100D);
+            city.setLiangjc(city.getLiangjc() + sxd / 100D);
             city.setLiangjccl((int) (city.getLiangcl() * city.getLiangjc()));
             city.setLiangcl(city.getLiangcl() + city.getLiangjccl());
             cityUpdate.set("liangjc", city.getLiangjc());
             cityUpdate.set("liangjccl", city.getLiangjccl());
+            mongoTemplate.updateFirst(cityQuery, cityUpdate, UserCity.class);
         } else if (meinv.getGz().equals("军务官")) {
-            city.setZbjc(city.getZbjc() + meinv.getMl() / 100D);
+            city.setZbjc(city.getZbjc() + sxd/4/ 100D);
             cityUpdate.set("zbjc", city.getZbjc());
+            mongoTemplate.updateFirst(cityQuery, cityUpdate, UserCity.class);
         }
-        mongoTemplate.updateFirst(cityQuery, cityUpdate, UserCity.class);
 
         //扣减道具数量
         daojuService.djsy(userId, "玉女心经", sxd);
@@ -907,8 +918,6 @@ public class CityService {
      */
     public List<SlgMap> fqzyt(String cityId, Integer zb) {
         Query query = new Query(Criteria.where("id").is(zb));
-        SlgMap slgMap = mongoTemplate.findOne(query, SlgMap.class);
-        zytjc(cityId, slgMap.getDklx(), -Chanliang.getChanliang(slgMap.getDkdj()));
         Update update = new Update();
         update.set("sswjId", "");
         update.set("sswjName", "");
@@ -953,6 +962,13 @@ public class CityService {
         update = new Update();
         update.set("dkmc", name);
         mongoTemplate.updateFirst(query, update, SlgMap.class);
+    }
+
+    public List<ZhengBing> tzzb(String cityId, String bz) {
+        Query query = new Query(Criteria.where("cityId").is(cityId).and("bz").is(bz));
+        mongoTemplate.remove(query, ZhengBing.class);
+        query = new Query(Criteria.where("cityId").is(cityId));
+        return mongoTemplate.find(query, ZhengBing.class);
     }
 
 //    public static void main(String[] args) {

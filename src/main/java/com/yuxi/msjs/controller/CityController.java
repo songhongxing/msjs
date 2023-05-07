@@ -301,4 +301,10 @@ public class CityController extends BaseController{
     public void gaiming(String cityId, String name){
         cityService.gaiming(cityId, name);
     }
+
+    @GetMapping("/tzzb")
+    public HjArray tzzb(String cityId, String bz){
+        List<ZhengBing> tzzb = cityService.tzzb(cityId, bz);
+        return arrayUtil.toArray(tzzb, tzzb.size(), ZhengBing.class);
+    }
 }

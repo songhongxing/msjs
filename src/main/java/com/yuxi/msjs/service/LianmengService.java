@@ -285,7 +285,7 @@ public class LianmengService {
         Query userQuery = new Query(Criteria.where("userId").is(userId));
         User user = mongoTemplate.findOne(userQuery, User.class);
         Lianmeng lianmeng = mongoTemplate.findOne(query, Lianmeng.class);
-        if(type == 1 && user.getLmId().equals("0")){
+        if(type == 1 && user.getLmId().equals("无")){
             Update update = new Update();
             update.set("lmId", lmId);
             update.set("lmmc",lianmeng.getLmmc());
@@ -335,5 +335,29 @@ public class LianmengService {
         }
         operations.upsert(updateList);
         operations.execute();
+    }
+
+    /**
+     * 任命官职
+     * @param lmId
+     * @param userId
+     * @return
+     */
+    public Long rmgz(String lmId, String userId) {
+        Query query = new Query(Criteria.where("userId").is(userId));
+        Update update = new Update();
+        update.set("lmgz",1);
+        mongoTemplate.updateFirst(query, update, User.class);
+        return fmsl(lmId);
+    }
+
+    /**
+     * 查询副盟主数量
+     * @param lmId
+     * @return
+     */
+    public Long fmsl(String lmId){
+        Query query = new Query(Criteria.where("lmId").is(lmId).and("lmgz").is(1));
+        return mongoTemplate.count(query, User.class);
     }
 }

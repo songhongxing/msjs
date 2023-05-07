@@ -15,19 +15,19 @@ import org.springframework.data.mongodb.core.mapping.Field;
 public class ZhengBing {
 
     @Field
-    private String cityId;
+    private String cityId;//0
     @Field
-    private String bz;//兵种
+    private String bz;//兵种1
     @Field
-    private Integer sl;//招募数量
+    private Integer sl;//招募数量2
     @Field
-    private Integer yzm;//已招募数量
+    private Integer yzm;//已招募数量3
     @Field
-    private Double dghs;//单个耗时
+    private Double dghs;//单个耗时4
     @Field
-    private Integer zhs;//总耗时
+    private Integer zhs;//总耗时5
     @Field
-    private Integer kssj;//开始时间
+    private Integer kssj;//开始时间6
     @Field
-    private Integer jssj;//结束时间
+    private Integer jssj;//结束时间7
 }
