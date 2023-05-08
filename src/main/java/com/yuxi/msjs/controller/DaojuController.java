@@ -58,7 +58,7 @@ public class DaojuController extends BaseController {
      */
     @GetMapping("/lb")
     public HjArray lb(String userId) {
-        List<UserDaoju> daojuList = daojuService.lb(userId);
+        List<UserDaoju> daojuList = daojuService.daojulb(userId);
         return arrayUtil.toArray(daojuList, daojuList.size(), UserDaoju.class);
     }
 
@@ -144,9 +144,9 @@ public class DaojuController extends BaseController {
      * @return
      */
     @GetMapping("/zjzy")
-    public HjDict zjzy(String userId, String cityId, String djName, Integer sl){
-        Map<String, Object> zjzy = daojuService.zjzy(userId, cityId, djName, sl);
-        return arrayUtil.toDict(zjzy);
+    public HjArray zjzy(String userId, String cityId, String djName, Integer sl){
+        List<UserDaoju> zjzy = daojuService.zjzy(userId, cityId, djName, sl);
+        return arrayUtil.toArray(zjzy,zjzy.size(), UserDaoju.class);
     }
 
 

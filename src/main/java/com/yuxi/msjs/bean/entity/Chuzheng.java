@@ -71,4 +71,5 @@ public class Chuzheng {
     private String czCityName=""; //出征城市名称26
     @Field
     private Integer xjsj = 0;//行军时间 27
+    private String dasjStr ="";//到达时间 28
 }

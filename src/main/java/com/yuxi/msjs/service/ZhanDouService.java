@@ -888,6 +888,8 @@ public class ZhanDouService {
         userCity.setZq(userCity.getZq() + chuzheng.getZq());
         userCity.setCc(userCity.getCc() + chuzheng.getCc());
         userCity.setTsc(userCity.getTsc() + chuzheng.getTsc());
+        userCity.setGb(userCity.getGb() + chuzheng.getGb());
+        userCity.setCh(userCity.getCh() + chuzheng.getCh());
         Update update = new Update();
         update.set("bb", userCity.getBb());
         update.set("qb", userCity.getQb());
@@ -897,6 +899,8 @@ public class ZhanDouService {
         update.set("hq", userCity.getHq());
         update.set("cc", userCity.getCc());
         update.set("tsc", userCity.getTsc());
+        update.set("gb", userCity.getGb());
+        update.set("ch", userCity.getCh());
         update.set("zhl", GameUtil.zhl(userCity));
         update.set("zbl", GameUtil.zbl(userCity));
         mongoTemplate.updateFirst(cityQuery, update, UserCity.class);
@@ -1453,4 +1457,10 @@ public class ZhanDouService {
         mongoTemplate.updateFirst(query, update, SlgMap.class);
     }
 
+    public List<Chuzheng> ct(String czId, String lx) {
+        Query query = new Query(Criteria.where("czId").is(czId));
+        Chuzheng chuzheng = mongoTemplate.findOne(query, Chuzheng.class);
+        fanhui(chuzheng);
+        return dixi(chuzheng.getGdUserId(), lx);
+    }
 }

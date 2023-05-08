@@ -63,8 +63,8 @@ public class UserController extends BaseController{
      */
     @GetMapping("/denglu")
     public HjDict denglu(String zh, String mm){
-        ZhangHao zhuce = userService.login(zh, mm);
-        return arrayUtil.toDict(BeanUtil.beanToMap(zhuce));
+        ZhangHao zhangHao = userService.login(zh, mm);
+        return arrayUtil.toDict(BeanUtil.beanToMap(zhangHao));
     }
 
 

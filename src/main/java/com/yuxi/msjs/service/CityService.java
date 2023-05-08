@@ -5,8 +5,33 @@ import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.lang.UUID;
 import cn.hutool.core.map.MapUtil;
 import com.mongodb.client.result.UpdateResult;
-import com.yuxi.msjs.bean.conste.*;
-import com.yuxi.msjs.bean.entity.*;
+import com.yuxi.msjs.bean.conste.Acsj;
+import com.yuxi.msjs.bean.conste.Ancang;
+import com.yuxi.msjs.bean.conste.Bysj;
+import com.yuxi.msjs.bean.conste.Bzzy;
+import com.yuxi.msjs.bean.conste.Chanliang;
+import com.yuxi.msjs.bean.conste.Cksj;
+import com.yuxi.msjs.bean.conste.Cqsj;
+import com.yuxi.msjs.bean.conste.Jgsj;
+import com.yuxi.msjs.bean.conste.Jianzhu;
+import com.yuxi.msjs.bean.conste.Jssj;
+import com.yuxi.msjs.bean.conste.Lcsj;
+import com.yuxi.msjs.bean.conste.Ntsj;
+import com.yuxi.msjs.bean.conste.Nztsj;
+import com.yuxi.msjs.bean.conste.Rongliang;
+import com.yuxi.msjs.bean.conste.Shoujun;
+import com.yuxi.msjs.bean.conste.Sksj;
+import com.yuxi.msjs.bean.conste.Tksj;
+import com.yuxi.msjs.bean.conste.Tqtsj;
+import com.yuxi.msjs.bean.entity.HomeUp;
+import com.yuxi.msjs.bean.entity.Lianmeng;
+import com.yuxi.msjs.bean.entity.Meinv;
+import com.yuxi.msjs.bean.entity.SlgMap;
+import com.yuxi.msjs.bean.entity.User;
+import com.yuxi.msjs.bean.entity.UserCity;
+import com.yuxi.msjs.bean.entity.UserDaoju;
+import com.yuxi.msjs.bean.entity.Wujiang;
+import com.yuxi.msjs.bean.entity.ZhengBing;
 import com.yuxi.msjs.bean.vo.CityList;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
@@ -376,7 +401,6 @@ public class CityService {
     }
 
 
-
     /**
      * 征兵队列
      *
@@ -391,27 +415,40 @@ public class CityService {
         Query query = new Query(Criteria.where("cityId").is(cityId));
         //扣除城市资源
         UserCity userCity = mongoTemplate.findOne(query, UserCity.class);
-        ZhengBing zhengBing = new ZhengBing();
-        zhengBing.setCityId(cityId);
-        zhengBing.setBz(bz);
-        zhengBing.setSl(sl);
-        zhengBing.setYzm(0);
-//        dghs = (int) (dghs * 1 - userCity.getZbjc());
-        zhengBing.setDghs(dghs);
-        zhengBing.setZhs((int) (dghs * sl));
-        zhengBing.setKssj((int) DateUtil.currentSeconds());
-        zhengBing.setJssj(zhengBing.getKssj() + zhengBing.getZhs());
-        mongoTemplate.save(zhengBing);
-
-
-        Update update = new Update();
-        update.set("mucc", userCity.getMucc() - Bzzy.getMuz(bz) * sl);
-        update.set("shicc", userCity.getShicc() - Bzzy.getShiz(bz) * sl);
-        update.set("tiecc", userCity.getTiecc() - Bzzy.getTiez(bz) * sl);
-        update.set("liangcc", userCity.getLiangcc() - Bzzy.getLiangz(bz) * sl);
-        mongoTemplate.updateFirst(query, update, "user_city");
+        int mu = Bzzy.getMuz(bz) * sl;
+        int shi = Bzzy.getShiz(bz) * sl;
+        int tie = Bzzy.getTiez(bz) * sl;
+        int liang = Bzzy.getLiangz(bz) * sl;
+        if (userCity.getMucc() >= mu && userCity.getShicc() >= shi
+                && userCity.getTiecc() >= tie && userCity.getLiangcc() >= liang) {
+            ZhengBing zhengBing = new ZhengBing();
+            zhengBing.setCityId(cityId);
+            zhengBing.setBz(bz);
+            zhengBing.setSl(sl);
+            zhengBing.setYzm(0);
+            //计算征兵加成
+            Query userQuery = new Query(Criteria.where("userId").is(userCity.getUserId()));
+            User user = mongoTemplate.findOne(userQuery, User.class);
+            if (!"无".equals(user.getLmId())) {
+                userQuery = new Query(Criteria.where("lmId").is(user.getLmId()));
+                Lianmeng lianmeng = mongoTemplate.findOne(userQuery, Lianmeng.class);
+                dghs = (Bzzy.getShijian(bz) * (1 - userCity.getZbjc() - lianmeng.getZbsddj() * 0.02));
+            } else {
+                dghs = (Bzzy.getShijian(bz) * (1 - userCity.getZbjc()));
+            }
+            zhengBing.setDghs(dghs);
+            zhengBing.setZhs((int) (dghs * sl));
+            zhengBing.setKssj((int) DateUtil.currentSeconds());
+            zhengBing.setJssj(zhengBing.getKssj() + zhengBing.getZhs());
+            mongoTemplate.save(zhengBing);
+            Update update = new Update();
+            update.set("mucc", userCity.getMucc() - Bzzy.getMuz(bz) * sl);
+            update.set("shicc", userCity.getShicc() - Bzzy.getShiz(bz) * sl);
+            update.set("tiecc", userCity.getTiecc() - Bzzy.getTiez(bz) * sl);
+            update.set("liangcc", userCity.getLiangcc() - Bzzy.getLiangz(bz) * sl);
+            mongoTemplate.updateFirst(query, update, "user_city");
+        }
         return mongoTemplate.find(query, ZhengBing.class);
-
     }
 
     /**

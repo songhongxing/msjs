@@ -53,7 +53,7 @@ public class DaojuService {
         return userDaojus;
     }
 
-    public List<UserDaoju> lb(String userId){
+    public List<UserDaoju> daojulb(String userId){
         Query query = new Query(Criteria.where("userId").is(userId));
         List<UserDaoju> userDaojus = mongoTemplate.find(query, UserDaoju.class);
         return userDaojus;
@@ -94,11 +94,11 @@ public class DaojuService {
      * @param cityId
      * @param djname  数量
      */
-    public Map<String, Object> zjzy(String userId, String cityId, String djname, Integer sl){
+    public List<UserDaoju> zjzy(String userId, String cityId, String djname, Integer sl){
         Query djQuery = new Query(Criteria.where("userId").is(userId).and("name").is(djname));
         UserDaoju userDaoju = mongoTemplate.findOne(djQuery, UserDaoju.class);
-        if(userDaoju == null){
-            return djsl(userId);
+        if(userDaoju == null || userDaoju.getSl() < sl || sl <= 0){
+            return daojulb(userId);
         }
         int zysl = 0;
         if("大箱资源".equals(djname)){
@@ -114,10 +114,15 @@ public class DaojuService {
         update.set("shicc", userCity.getShicc() + zysl > userCity.getCkcc() ? userCity.getCkcc() : userCity.getShicc() + zysl);
         update.set("liangcc", userCity.getLiangcc() + zysl > userCity.getLccc() ? userCity.getLccc() : userCity.getLiangcc() + zysl);
         mongoTemplate.updateFirst(query, update, UserCity.class);
-        update = new Update();
-        update.set("sl", userDaoju.getSl() - 1);
-        mongoTemplate.updateFirst(djQuery, update, UserDaoju.class);
-        return djsl(userId);
+
+        if(userDaoju.getSl() - sl == 0){
+            mongoTemplate.remove(djQuery, UserDaoju.class);
+        } else {
+            update = new Update();
+            update.set("sl", userDaoju.getSl() - sl);
+            mongoTemplate.updateFirst(djQuery, update, UserDaoju.class);
+        }
+        return daojulb(userId);
     }
 
     public Map<String, Object> djsl(String userId){

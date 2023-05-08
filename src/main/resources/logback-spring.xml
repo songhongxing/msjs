@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--配置文件发生改变，被重新加载 检测时间为10 seconds-->
+<configuration scan="true" scanPeriod="10 seconds">
+    <springProperty scope="context" name="SERVER_NAME" source="spring.application.name"/>
+
+    <springProperty scope="context" name="LOG_PATH" source="log.path"/>
+
+    <!--设置变量-->
+    <property name="HOST_NAME" value="${HOSTNAME:-UNKNOWN}"/>
+
+
+    <!--<include  resource="org/springframework/boot/logging/logback/base.xml"  />-->
+
+    <!-- 控制台 appender 格式化日志输出节点-->
+    <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <!-- 文件 appender 应用日志输出  用于切分文件日志-->
+    <appender name="file" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <File>${HOST_NAME}_${SERVER_NAME}.log</File>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!--文件路径,定义了日志的切分方式——把每一天的日志归档到一个文件中,以防止日志填满整个磁盘空间-->
+            <FileNamePattern>${LOG_PATH}/${HOST_NAME}_${SERVER_NAME}.log.%d{yyyy-MM-dd}.zip</FileNamePattern>
+            <!--日志文件保留天数-->
+            <MaxHistory>30</MaxHistory>
+        </rollingPolicy>
+        <!--&lt;!&ndash;日志文件最大的大小&ndash;&gt;-->
+        <!--<triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">-->
+            <!--<MaxFileSize>100MB</MaxFileSize>-->
+        <!--</triggeringPolicy>-->
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <!--&lt;!&ndash; 第三方框架日志输出 ，如启动日志，mybatis日志等 &ndash;&gt;-->
+    <!--<appender name="thirdPartyAppender" class="ch.qos.logback.core.rolling.RollingFileAppender">-->
+        <!--<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">-->
+            <!--&lt;!&ndash;日志文件输出的文件名&ndash;&gt;-->
+            <!--<FileNamePattern>${LOG_PATH}/${HOST_NAME}_${SERVER_NAME}_thirdParty.log.%d{yyyy-MM-dd}.zip</FileNamePattern>-->
+            <!--&lt;!&ndash;日志文件保留天数&ndash;&gt;-->
+            <!--<MaxHistory>30</MaxHistory>-->
+        <!--</rollingPolicy>-->
+        <!--&lt;!&ndash;日志文件最大的大小&ndash;&gt;-->
+        <!--<triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">-->
+            <!--<MaxFileSize>100MB</MaxFileSize>-->
+        <!--</triggeringPolicy>-->
+        <!--<encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">-->
+            <!--<pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>-->
+            <!--<charset>UTF-8</charset>-->
+        <!--</encoder>-->
+    <!--</appender>-->
+
+
+    <!--指定最基础的日志输出级别-->
+    <root level="INFO">
+        <appender-ref ref="console" />
+        <appender-ref ref="file" />
+    </root>
+
+    <logger name="cn.marknum" additivity="false" level="info">
+        <appender-ref ref="file" />
+        <appender-ref ref="console" />
+    </logger>
+</configuration>

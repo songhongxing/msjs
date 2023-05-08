@@ -37,7 +37,7 @@ public class MapService {
                 slgMap.setDksj(0);
             } else {
                 slgMap.setDkmc(slgMap.getDklx());
-                slgMap.setDkdj(RandomUtil.randomInt(1, 5));
+                slgMap.setDkdj(RandomUtil.randomInt(1, 10));
                 slgMap.setDksj(Shoujun.getKeyByValue(slgMap.getDkdj()));
                 slgMap.setSjlx(Shoujun.getSjlxz(slgMap.getDkdj()));
             }

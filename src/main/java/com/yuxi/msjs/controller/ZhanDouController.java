@@ -1,5 +1,7 @@
 package com.yuxi.msjs.controller;
 
+import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import com.yuxi.msjs.bean.entity.Chuzheng;
@@ -16,6 +18,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -84,6 +87,22 @@ public class ZhanDouController extends BaseController{
     @GetMapping("/jqlb")
     public HjArray jqlb(String userId, String lx){
         List<Chuzheng> jqlb = zhanDouService.dixi(userId, lx);
+        if(CollUtil.isNotEmpty(jqlb)){
+            jqlb.forEach(jq -> {
+                jq.setDasjStr(DateUtil.format(new Date(jq.getDdsj() * 1000l), "MM-dd HH:mm:ss"));
+            });
+        }
+        return arrayUtil.toArray(jqlb, jqlb.size(), Chuzheng.class);
+    }
+
+    /**
+     * 撤退
+     * @param czId
+     * @return
+     */
+    @GetMapping("/ct")
+    public HjArray ct(String czId,String lx){
+        List<Chuzheng> jqlb = zhanDouService.ct(czId, lx);
         return arrayUtil.toArray(jqlb, jqlb.size(), Chuzheng.class);
     }
 
